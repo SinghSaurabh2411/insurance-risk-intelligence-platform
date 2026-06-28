@@ -13,36 +13,41 @@ The ETL pipeline is implemented using PySpark and orchestrated using Apache Airf
 # End-to-End Data Flow
 
 ```
-                     Source Dataset (CSV)
-                              │
-                              │
-                              ▼
-                     PySpark Bronze ETL
-                              │
-                              ▼
-                 BRONZE_POLICY_DATA
-                              │
-                              │
-                     PySpark Silver ETL
-                              │
+                                  Source Dataset (CSV)
+                                          │
+                                          │
+                                          ▼
+                                  PySpark Bronze ETL
+                                          │
+                                          ▼
+                                  BRONZE_POLICY_DATA
+                                          │
+                                          │
+                                  PySpark Silver ETL
+                                          │
       ┌────────────────┬──────────────────┬──────────────┬──────────────────┐
       ▼                ▼                  ▼              ▼                  ▼
 SILVER_POLICY    SILVER_CUSTOMER    SILVER_PRODUCT   SILVER_CLAIMS    SILVER_ENRICHMENT
-                              │
-                              ▼
-                      PySpark Gold ETL
-                              │
-      ┌──────────────┬──────────────┬──────────────┬──────────────┐
-      ▼              ▼              ▼              ▼              ▼
- DIM_POLICY   DIM_CUSTOMER      DIM_PRODUCT   DIM_CHANNEL     DIM_TIME
-                              │
-                      ┌───────┴────────┐
-                      ▼                ▼
-               FACT_POLICY      FACT_CLAIMS
-                              │
-                 ┌────────────┼────────────┐
-                 ▼            ▼            ▼
-             FastAPI      Streamlit    RAG / NL2SQL
+
+                                          │
+                            ──────────────┼──────────────
+                                          │
+                                   PySpark Gold ETL
+                                          │
+                  ┌──────────────┬──────────────┬──────────────┬──────────────┐
+                  ▼              ▼              ▼              ▼              ▼
+            DIM_POLICY   DIM_CUSTOMER      DIM_PRODUCT   DIM_CHANNEL     DIM_TIME
+                                          │
+                                  ┌───────┴────────┐
+                                  ▼                ▼
+                              FACT_POLICY      FACT_CLAIMS
+                              
+                                          │
+                                 ─────────┼─────────
+                                          │
+                             ┌────────────┼────────────┐
+                             ▼            ▼            ▼
+                          FastAPI      Streamlit    RAG / NL2SQL
 ```
 
 ---
