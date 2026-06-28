@@ -36,7 +36,7 @@ This layered approach improves maintainability, data quality, traceability, and 
                             │
                     PySpark Gold ETL
                             │
-      ┌──────────────┬──────────────┬──────────────┬──────────────┐
+      ┌──────────────┬──────────────┬──────────────┐
       ▼              ▼              ▼              ▼
  DIM_POLICY     DIM_CUSTOMER   DIM_PRODUCT   DIM_CHANNEL
       │
