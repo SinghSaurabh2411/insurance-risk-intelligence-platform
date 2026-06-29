@@ -5,14 +5,13 @@
  Purpose        : Create schemas for Medallion Architecture
 
  Author         : Saurabh Singh
- Created On     : 2026-06-28
+ Created On     : YYYY-MM-DD
 
  Schemas
  --------
  DWH_BRONZE
  DWH_SILVER
  DWH_GOLD
- DWH_CONTROL
 
 *****************************************************************************************/
 
@@ -92,21 +91,20 @@ GRANT
 TO DWH_GOLD;
 
 /*
-
-*****************************************************************************************
+===============================================================================
 Create DWH Control Schema
-*****************************************************************************************/
-
 
 Description
 -----------
 Creates the schema responsible for ETL metadata, audit,
 control tables and sequences.
 
+===============================================================================
 */
 
+
 CREATE USER DWH_CONTROL
-IDENTIFIED BY dwh_control
+IDENTIFIED BY saurabh
 DEFAULT TABLESPACE USERS
 TEMPORARY TABLESPACE TEMP
 QUOTA UNLIMITED ON USERS;
