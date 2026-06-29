@@ -2,7 +2,7 @@
 ===============================================================================
 File Name  : 03_CREATE_BRONZE_POLICY_DATA.sql
 
-Schema     : BRONZE_DWH
+Schema     : DWH_BRONZE
 
 Purpose    : Create Bronze Policy Data Table
 
