@@ -1,5 +1,5 @@
 /*****************************************************************************************
- Project        : Healthcare Insurance Data Warehouse
+ Project        : Insurance Risk Intelligence Platform
  File           : 01_create_users.sql
  Layer          : Oracle Database
  Purpose        : Create schemas for Medallion Architecture
