@@ -11,6 +11,15 @@ environment (.env).
 
 This module ONLY contains Oracle connectivity.
 
+Responsibilities
+----------------
+1. Oracle Server Configuration
+2. JDBC Configuration
+3. Schema Names
+4. Schema-wise JDBC Connection Properties
+
+No business logic should exist here.
+
 ==========================================================
 """
 
@@ -25,7 +34,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ==========================================================
-# Oracle Server
+# Oracle Server Configuration
 # ==========================================================
 
 ORACLE_HOST = os.getenv("ORACLE_HOST")
@@ -49,40 +58,52 @@ JDBC_URL = (
 )
 
 # ==========================================================
-# Bronze Connection
+# Oracle Schemas
 # ==========================================================
 
-BRONZE_PROPERTIES = {
+CONTROL_SCHEMA = "DWH_CONTROL"
+
+BRONZE_SCHEMA = "DWH_BRONZE"
+
+SILVER_SCHEMA = "DWH_SILVER"
+
+GOLD_SCHEMA = "DWH_GOLD"
+
+# ==========================================================
+# Bronze JDBC Properties
+# ==========================================================
+
+BRONZE_JDBC_PROPERTIES = {
     "user": os.getenv("BRONZE_USER"),
     "password": os.getenv("BRONZE_PASSWORD"),
     "driver": JDBC_DRIVER
 }
 
 # ==========================================================
-# Silver Connection
+# Silver JDBC Properties
 # ==========================================================
 
-SILVER_PROPERTIES = {
+SILVER_JDBC_PROPERTIES = {
     "user": os.getenv("SILVER_USER"),
     "password": os.getenv("SILVER_PASSWORD"),
     "driver": JDBC_DRIVER
 }
 
 # ==========================================================
-# Gold Connection
+# Gold JDBC Properties
 # ==========================================================
 
-GOLD_PROPERTIES = {
+GOLD_JDBC_PROPERTIES = {
     "user": os.getenv("GOLD_USER"),
     "password": os.getenv("GOLD_PASSWORD"),
     "driver": JDBC_DRIVER
 }
 
 # ==========================================================
-# Control Connection
+# Control JDBC Properties
 # ==========================================================
 
-CONTROL_PROPERTIES = {
+CONTROL_JDBC_PROPERTIES = {
     "user": os.getenv("CONTROL_USER"),
     "password": os.getenv("CONTROL_PASSWORD"),
     "driver": JDBC_DRIVER
