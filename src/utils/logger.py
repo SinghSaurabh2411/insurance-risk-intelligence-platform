@@ -21,7 +21,8 @@ Responsibilities
 """
 
 import logging
-from logging.handlers import TimedRotatingFileHandler
+#from logging.handlers import TimedRotatingFileHandler
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 from pathlib import Path
 
 from config.logging_config import (
@@ -126,18 +127,28 @@ def get_logger(
     # File Handler
     # ======================================================
 
-    file_handler = TimedRotatingFileHandler(
+    # file_handler = TimedRotatingFileHandler(
+    #
+    #     filename=log_file,
+    #
+    #     when=LOG_ROTATION_WHEN,
+    #
+    #     interval=LOG_ROTATION_INTERVAL,
+    #
+    #     backupCount=LOG_BACKUP_COUNT,
+    #
+    #     encoding=LOG_ENCODING
+    #
+    # )
 
+
+
+    file_handler = ConcurrentRotatingFileHandler(
         filename=log_file,
-
-        when=LOG_ROTATION_WHEN,
-
-        interval=LOG_ROTATION_INTERVAL,
-
+        maxBytes=5 * 1024 * 1024,  # 5 MB per log file
         backupCount=LOG_BACKUP_COUNT,
-
+        use_gzip=True,  # compress old logs
         encoding=LOG_ENCODING
-
     )
 
     file_handler.setFormatter(formatter)
