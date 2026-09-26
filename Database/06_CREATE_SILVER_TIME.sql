@@ -3,7 +3,7 @@
 File Name  : 06_CREATE_SILVER_TIME.sql
 Schema     : DWH_SILVER
 Purpose    : Create Silver Time table
-Grain      : PERIOD
+Grain      : one row per observation period
 ===============================================================================
 */
 
@@ -16,6 +16,6 @@ CREATE TABLE SILVER_TIME
 );
 
 COMMENT ON TABLE SILVER_TIME IS
-'Silver time subject containing one row per observation period.';
+'Silver time subject containing one row per distinct observation period.';
 
 COMMIT;
