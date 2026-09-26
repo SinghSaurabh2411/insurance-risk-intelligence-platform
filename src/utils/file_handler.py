@@ -31,6 +31,10 @@ from utils.control_table import (
     is_file_processed
 )
 
+from utils.file_hash import (
+    calculate_file_sha256
+)
+
 from utils.logger import get_logger
 
 
@@ -150,10 +154,17 @@ def get_unprocessed_files(
 
         source_file = file_path.name
 
-        if is_file_processed(source_file):
+        source_file_hash = calculate_file_sha256(
+            source_file=file_path
+        )
+
+        if is_file_processed(
+            source_file=source_file,
+            source_file_hash=source_file_hash
+        ):
 
             logger.info(
-                "Skipping already processed file: %s",
+                "Skipping already processed file version: %s",
                 source_file
             )
 
