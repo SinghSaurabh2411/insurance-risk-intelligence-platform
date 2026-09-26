@@ -25,6 +25,6 @@ CREATE TABLE SILVER_CUSTOMER
 );
 
 COMMENT ON TABLE SILVER_CUSTOMER IS
-'Silver customer subject at the source business observation grain, including insured effect/lapse year attributes.';
+'Silver customer subject at the source business observation grain, including insured lifecycle year attributes.';
 
 COMMIT;
