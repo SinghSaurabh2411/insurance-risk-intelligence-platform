@@ -13,7 +13,7 @@ Flow
 ----
 1. Discover unprocessed source files
 2. Generate LOAD_ID
-3. Register ETL load as RUNNING
+3. Register ETL load as STARTED
 4. Read source CSV
 5. Validate source data
 6. Transform source data
@@ -69,7 +69,11 @@ from utils.file_handler import (
     get_unprocessed_files,
 )
 
-from utils.file_hash import (\n    calculate_file_sha256,\n)\n\nfrom utils.control_table import (
+from utils.file_hash import (
+    calculate_file_sha256,
+)
+
+from utils.control_table import (
     generate_load_id,
     register_load,
     update_load_status,
