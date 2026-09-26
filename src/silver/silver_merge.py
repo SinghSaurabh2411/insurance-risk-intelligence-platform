@@ -27,8 +27,11 @@ def _sql(target: str, columns: list, keys: list) -> str:
     updates = ", ".join(f"t.{c.upper()} = s.{c.upper()}" for c in non_keys)
     ins_cols = ", ".join(c.upper() for c in columns)
     ins_vals = ", ".join(f"s.{c.upper()}" for c in columns)
+    using_source = STAGE
+    if target.endswith("SILVER_TIME"):
+        using_source = f"(SELECT DISTINCT {\", \".join(c.upper() for c in columns)} FROM {STAGE})"
     return f"""MERGE INTO {target} t
-USING {STAGE} s
+USING {using_source} s
 ON ({on})
 WHEN MATCHED THEN UPDATE SET {updates}
 WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})"""
