@@ -1,4 +1,4 @@
-"""
+""" 
 ==========================================================
 Project : Insurance Risk Intelligence Platform
 Module  : ETL Control Table Utility
@@ -9,15 +9,8 @@ Description
 Provides reusable functions for interacting with the
 DWH_CONTROL.ETL_CONTROL table.
 
-Responsibilities
-----------------
-1. Check whether a source file was already processed.
-2. Register a new ETL load.
-3. Update the status of an ETL load.
-4. Retrieve the latest load information.
-5. Generate LOAD_ID using the Oracle sequence.
-
-The control table is responsible for ETL execution tracking.
+The Python contract in this module is aligned with the
+current Oracle ETL_CONTROL DDL.
 
 No business transformation logic should exist here.
 
@@ -72,17 +65,6 @@ def is_file_processed(
     """
     Checks whether a source file has already been
     successfully processed.
-
-    Parameters
-    ----------
-    source_file : str
-        Source file name.
-
-    Returns
-    -------
-    bool
-        True  -> file already successfully processed
-        False -> file has not been successfully processed
     """
 
     connection = None
@@ -92,11 +74,10 @@ def is_file_processed(
         SELECT COUNT(1)
         FROM {CONTROL_TABLE}
         WHERE SOURCE_FILE = :source_file
-          AND STATUS = 'SUCCESS'
+          AND LOAD_STATUS = 'SUCCESS'
     """
 
     try:
-
         connection = get_connection(
             CONTROL_JDBC_PROPERTIES
         )
@@ -123,16 +104,13 @@ def is_file_processed(
         return processed
 
     except Exception:
-
         logger.exception(
             "Failed to check processed status for file: %s",
             source_file
         )
-
         raise
 
     finally:
-
         if cursor is not None:
             cursor.close()
 
@@ -147,11 +125,6 @@ def is_file_processed(
 def generate_load_id() -> int:
     """
     Generates a new LOAD_ID using the Oracle sequence.
-
-    Returns
-    -------
-    int
-        Newly generated LOAD_ID.
     """
 
     connection = None
@@ -163,7 +136,6 @@ def generate_load_id() -> int:
     """
 
     try:
-
         connection = get_connection(
             CONTROL_JDBC_PROPERTIES
         )
@@ -182,15 +154,12 @@ def generate_load_id() -> int:
         return load_id
 
     except Exception:
-
         logger.exception(
             "Failed to generate LOAD_ID."
         )
-
         raise
 
     finally:
-
         if cursor is not None:
             cursor.close()
 
@@ -204,26 +173,18 @@ def generate_load_id() -> int:
 
 def register_load(
     load_id: int,
+    layer_name: str,
+    pipeline_name: str,
     source_file: str,
-    etl_created_by: str
+    source_file_hash: str,
+    source_record_count: int,
+    created_by: str
 ) -> None:
     """
     Registers the beginning of an ETL load.
 
-    Parameters
-    ----------
-    load_id : int
-        Unique ETL load ID.
-
-    source_file : str
-        Source file being processed.
-
-    etl_created_by : str
-        Name of the ETL process initiating the load.
-
-    Returns
-    -------
-    None
+    SOURCE_FILE_HASH is the SHA-256 checksum of the
+    complete raw source file.
     """
 
     connection = None
@@ -233,23 +194,30 @@ def register_load(
         INSERT INTO {CONTROL_TABLE}
         (
             LOAD_ID,
+            LAYER_NAME,
+            PIPELINE_NAME,
             SOURCE_FILE,
-            LOAD_TIMESTAMP,
-            STATUS,
-            ETL_CREATED_BY
+            SOURCE_FILE_HASH,
+            SOURCE_RECORD_COUNT,
+            LOAD_STATUS,
+            START_TIME,
+            CREATED_BY
         )
         VALUES
         (
             :load_id,
+            :layer_name,
+            :pipeline_name,
             :source_file,
+            :source_file_hash,
+            :source_record_count,
+            'STARTED',
             SYSTIMESTAMP,
-            'RUNNING',
-            :etl_created_by
+            :created_by
         )
     """
 
     try:
-
         connection = get_connection(
             CONTROL_JDBC_PROPERTIES
         )
@@ -260,8 +228,12 @@ def register_load(
             sql,
             {
                 "load_id": load_id,
+                "layer_name": layer_name,
+                "pipeline_name": pipeline_name,
                 "source_file": source_file,
-                "etl_created_by": etl_created_by
+                "source_file_hash": source_file_hash,
+                "source_record_count": source_record_count,
+                "created_by": created_by
             }
         )
 
@@ -274,7 +246,6 @@ def register_load(
         )
 
     except Exception:
-
         if connection is not None:
             connection.rollback()
 
@@ -286,7 +257,6 @@ def register_load(
         raise
 
     finally:
-
         if cursor is not None:
             cursor.close()
 
@@ -301,33 +271,21 @@ def register_load(
 def update_load_status(
     load_id: int,
     status: str,
-    error_message: Optional[str] = None
+    error_message: Optional[str] = None,
+    target_record_count: Optional[int] = None
 ) -> None:
     """
     Updates the status of an ETL load.
 
-    Parameters
-    ----------
-    load_id : int
-        ETL load ID.
+    Allowed values are defined by the current Oracle DDL:
 
-    status : str
-        Expected values:
-
-        RUNNING
+        STARTED
         SUCCESS
         FAILED
-
-    error_message : Optional[str]
-        Error details when the load fails.
-
-    Returns
-    -------
-    None
     """
 
     allowed_statuses = {
-        "RUNNING",
+        "STARTED",
         "SUCCESS",
         "FAILED"
     }
@@ -335,7 +293,6 @@ def update_load_status(
     status = status.upper()
 
     if status not in allowed_statuses:
-
         raise ValueError(
             f"Invalid ETL status: {status}. "
             f"Allowed values: {allowed_statuses}"
@@ -344,16 +301,26 @@ def update_load_status(
     connection = None
     cursor = None
 
-    sql = f"""
-        UPDATE {CONTROL_TABLE}
-        SET
-            STATUS = :status,
-            ERROR_MESSAGE = :error_message
-        WHERE LOAD_ID = :load_id
-    """
+    if status == "STARTED":
+        sql = f"""
+            UPDATE {CONTROL_TABLE}
+            SET
+                LOAD_STATUS = :load_status,
+                ERROR_MESSAGE = :error_message
+            WHERE LOAD_ID = :load_id
+        """
+    else:
+        sql = f"""
+            UPDATE {CONTROL_TABLE}
+            SET
+                LOAD_STATUS = :load_status,
+                TARGET_RECORD_COUNT = :target_record_count,
+                END_TIME = SYSTIMESTAMP,
+                ERROR_MESSAGE = :error_message
+            WHERE LOAD_ID = :load_id
+        """
 
     try:
-
         connection = get_connection(
             CONTROL_JDBC_PROPERTIES
         )
@@ -363,7 +330,8 @@ def update_load_status(
         cursor.execute(
             sql,
             {
-                "status": status,
+                "load_status": status,
+                "target_record_count": target_record_count,
                 "error_message": error_message,
                 "load_id": load_id
             }
@@ -378,7 +346,6 @@ def update_load_status(
         )
 
     except Exception:
-
         if connection is not None:
             connection.rollback()
 
@@ -390,7 +357,6 @@ def update_load_status(
         raise
 
     finally:
-
         if cursor is not None:
             cursor.close()
 
@@ -405,11 +371,6 @@ def update_load_status(
 def get_latest_load() -> Optional[dict]:
     """
     Retrieves the latest ETL load from the control table.
-
-    Returns
-    -------
-    Optional[dict]
-        Latest load information or None if no load exists.
     """
 
     connection = None
@@ -418,18 +379,23 @@ def get_latest_load() -> Optional[dict]:
     sql = f"""
         SELECT
             LOAD_ID,
+            LAYER_NAME,
+            PIPELINE_NAME,
             SOURCE_FILE,
-            LOAD_TIMESTAMP,
-            STATUS,
-            ETL_CREATED_BY,
-            ERROR_MESSAGE
+            SOURCE_FILE_HASH,
+            SOURCE_RECORD_COUNT,
+            TARGET_RECORD_COUNT,
+            LOAD_STATUS,
+            START_TIME,
+            END_TIME,
+            ERROR_MESSAGE,
+            CREATED_BY
         FROM {CONTROL_TABLE}
         ORDER BY LOAD_ID DESC
         FETCH FIRST 1 ROW ONLY
     """
 
     try:
-
         connection = get_connection(
             CONTROL_JDBC_PROPERTIES
         )
@@ -445,11 +411,17 @@ def get_latest_load() -> Optional[dict]:
 
         columns = [
             "LOAD_ID",
+            "LAYER_NAME",
+            "PIPELINE_NAME",
             "SOURCE_FILE",
-            "LOAD_TIMESTAMP",
-            "STATUS",
-            "ETL_CREATED_BY",
-            "ERROR_MESSAGE"
+            "SOURCE_FILE_HASH",
+            "SOURCE_RECORD_COUNT",
+            "TARGET_RECORD_COUNT",
+            "LOAD_STATUS",
+            "START_TIME",
+            "END_TIME",
+            "ERROR_MESSAGE",
+            "CREATED_BY"
         ]
 
         return dict(
@@ -457,15 +429,12 @@ def get_latest_load() -> Optional[dict]:
         )
 
     except Exception:
-
         logger.exception(
             "Failed to retrieve latest ETL load."
         )
-
         raise
 
     finally:
-
         if cursor is not None:
             cursor.close()
 
