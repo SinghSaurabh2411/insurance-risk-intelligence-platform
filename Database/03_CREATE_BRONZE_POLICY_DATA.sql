@@ -10,8 +10,8 @@ Description
 -----------
 Raw landing table for Healthcare Insurance dataset.
 
-• Stores source data exactly as received.
-• No transformations.
+• Preserves the source dataset at Bronze layer grain.
+• Applies required technical type conversions before persistence.
 • No deduplication.
 • No business validations.
 • Includes ETL audit columns.
@@ -139,7 +139,7 @@ CREATE TABLE BRONZE_POLICY_DATA
 -------------------------------------------------------------------------------
 
 COMMENT ON TABLE BRONZE_POLICY_DATA IS
-'Raw Bronze layer storing source insurance dataset without transformations.';
+'Bronze layer storing the source insurance dataset with required technical type conversions.';
 
 -------------------------------------------------------------------------------
 -- Audit Column Comments
