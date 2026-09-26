@@ -4,7 +4,7 @@
 
 | Item | Value |
 |------|------|
-| Version | 1.1 |
+| Version | 1.2 |
 | Status | Frozen |
 | Last Updated | 27-Sep-2026 |
 | Author | Saurabh Singh |
@@ -67,6 +67,9 @@ The current Silver model contains eight tables:
 
 ### Important mapping decisions
 
+- SILVER_TIME contains PERIOD only, at one row per observation period.
+- YEAR_EFFECT_POLICY and YEAR_LAPSE_POLICY → SILVER_POLICY
+- YEAR_EFFECT_INSURED and YEAR_LAPSE_INSURED → SILVER_CUSTOMER
 - REIMBURSEMENT → SILVER_PRODUCT
 - COST_CLAIMS_YEAR → SILVER_FINANCIAL
 - N_MEDICAL_SERVICES → SILVER_COVERAGE
@@ -185,3 +188,4 @@ These components are intentionally documented as planned until corresponding imp
 |----------|------|-------------|
 | 1.0 | 28-Jun-2026 | Initial frozen source metadata version |
 | 1.1 | 27-Sep-2026 | Reconciled current eight-table Silver architecture, Silver MERGE/upsert strategy, and planned downstream component status |
+| 1.2 | 27-Sep-2026 | Corrected Silver time grain: SILVER_TIME contains PERIOD only; observation-level YEAR_* attributes moved to SILVER_POLICY and SILVER_CUSTOMER |
