@@ -24,18 +24,26 @@ TARGETS = {
 def _sql(target: str, columns: list, keys: list) -> str:
     non_keys = [c for c in columns if c not in keys]
     on = " AND ".join(f"t.{c.upper()} = s.{c.upper()}" for c in keys)
-    updates = ", ".join(f"t.{c.upper()} = s.{c.upper()}" for c in non_keys)
     ins_cols = ", ".join(c.upper() for c in columns)
     ins_vals = ", ".join(f"s.{c.upper()}" for c in columns)
     using_source = STAGE
     if target.endswith("SILVER_TIME"):
         select_columns = ", ".join(c.upper() for c in columns)
         using_source = f"(SELECT DISTINCT {select_columns} FROM {STAGE})"
+
+    merge_clauses = []
+    if non_keys:
+        updates = ", ".join(f"t.{c.upper()} = s.{c.upper()}" for c in non_keys)
+        merge_clauses.append(f"WHEN MATCHED THEN UPDATE SET {updates}")
+
+    merge_clauses.append(
+        f"WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})"
+    )
+
     return f"""MERGE INTO {target} t
 USING {using_source} s
 ON ({on})
-WHEN MATCHED THEN UPDATE SET {updates}
-WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})"""
+{chr(10).join(merge_clauses)}"""
 
 def merge_all_silver_tables(projection_columns: Dict[str, list]) -> None:
     order = ["SILVER_RECORD","SILVER_TIME","SILVER_POLICY","SILVER_CUSTOMER","SILVER_PRODUCT","SILVER_CHANNEL","SILVER_COVERAGE","SILVER_FINANCIAL"]
