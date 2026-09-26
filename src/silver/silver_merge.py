@@ -29,7 +29,8 @@ def _sql(target: str, columns: list, keys: list) -> str:
     ins_vals = ", ".join(f"s.{c.upper()}" for c in columns)
     using_source = STAGE
     if target.endswith("SILVER_TIME"):
-        using_source = f"(SELECT DISTINCT {\", \".join(c.upper() for c in columns)} FROM {STAGE})"
+        select_columns = ", ".join(c.upper() for c in columns)
+        using_source = f"(SELECT DISTINCT {select_columns} FROM {STAGE})"
     return f"""MERGE INTO {target} t
 USING {using_source} s
 ON ({on})
