@@ -74,6 +74,7 @@ def is_file_processed(
         SELECT COUNT(1)
         FROM {CONTROL_TABLE}
         WHERE SOURCE_FILE = :source_file
+          AND SOURCE_FILE_HASH = :source_file_hash
           AND LOAD_STATUS = 'SUCCESS'
     """
 
@@ -87,7 +88,8 @@ def is_file_processed(
         cursor.execute(
             sql,
             {
-                "source_file": source_file
+                "source_file": source_file,
+                "source_file_hash": source_file_hash
             }
         )
 
@@ -96,8 +98,9 @@ def is_file_processed(
         processed = count > 0
 
         logger.info(
-            "File '%s' processed status: %s",
+            "File '%s' with hash '%s' processed status: %s",
             source_file,
+            source_file_hash,
             processed
         )
 
