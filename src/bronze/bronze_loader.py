@@ -54,7 +54,7 @@ from config.config import (
 
 from config.oracle_config import (
     JDBC_URL,
-    BRONZE_PROPERTIES,
+    BRONZE_JDBC_PROPERTIES,
 )
 
 from bronze.bronze_validator import (
@@ -69,7 +69,7 @@ from utils.file_handler import (
     get_unprocessed_files,
 )
 
-from utils.control_table import (
+from utils.file_hash import (\n    calculate_file_sha256,\n)\n\nfrom utils.control_table import (
     generate_load_id,
     register_load,
     update_load_status,
@@ -201,15 +201,15 @@ def write_bronze_data(
         )
         .option(
             "user",
-            BRONZE_PROPERTIES["user"],
+            BRONZE_JDBC_PROPERTIES["user"],
         )
         .option(
             "password",
-            BRONZE_PROPERTIES["password"],
+            BRONZE_JDBC_PROPERTIES["password"],
         )
         .option(
             "driver",
-            BRONZE_PROPERTIES["driver"],
+            BRONZE_JDBC_PROPERTIES["driver"],
         )
         .mode(
             BRONZE_WRITE_MODE,
@@ -277,19 +277,11 @@ def process_file(
         )
 
         # =====================================================================
-        # 2. REGISTER LOAD
+        # 2. CALCULATE SOURCE FILE HASH
         # =====================================================================
 
-        register_load(
-            load_id=load_id,
-            source_file=source_file_name,
-            etl_created_by=ETL_CREATED_BY,
-        )
-
-        logger.info(
-            "ETL load registered as %s | LOAD_ID=%s",
-            STATUS_RUNNING,
-            load_id,
+        source_file_hash = calculate_file_sha256(
+            source_file=source_file,
         )
 
         # =====================================================================
@@ -301,8 +293,30 @@ def process_file(
             source_file=source_file,
         )
 
+        source_record_count = dataframe.count()
+
         # =====================================================================
-        # 4. VALIDATE SOURCE
+        # 4. REGISTER LOAD
+        # =====================================================================
+
+        register_load(
+            load_id=load_id,
+            layer_name="BRONZE",
+            pipeline_name="BRONZE_POLICY_PIPELINE",
+            source_file=source_file_name,
+            source_file_hash=source_file_hash,
+            source_record_count=source_record_count,
+            created_by=ETL_CREATED_BY,
+        )
+
+        logger.info(
+            "ETL load registered as %s | LOAD_ID=%s",
+            STATUS_RUNNING,
+            load_id,
+        )
+
+        # =====================================================================
+        # 5. VALIDATE SOURCE
         # =====================================================================
 
         validate_bronze_source(
@@ -315,7 +329,7 @@ def process_file(
         )
 
         # =====================================================================
-        # 5. TRANSFORM SOURCE
+        # 6. TRANSFORM SOURCE
         # =====================================================================
 
         bronze_dataframe = transform_to_bronze(
@@ -331,20 +345,23 @@ def process_file(
         )
 
         # =====================================================================
-        # 6. WRITE TO ORACLE BRONZE
+        # 7. WRITE TO ORACLE BRONZE
         # =====================================================================
+
+        target_record_count = bronze_dataframe.count()
 
         write_bronze_data(
             dataframe=bronze_dataframe,
         )
 
         # =====================================================================
-        # 7. MARK LOAD SUCCESSFUL
+        # 8. MARK LOAD SUCCESSFUL
         # =====================================================================
 
         update_load_status(
             load_id=load_id,
             status=STATUS_SUCCESS,
+            target_record_count=target_record_count,
         )
 
         logger.info(
