@@ -51,7 +51,7 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 
 LOG_DIR = PROJECT_ROOT / "logs"
 
-SQL_DIR = PROJECT_ROOT / "oracle"
+SQL_DIR = PROJECT_ROOT / "Database"
 
 
 # =============================================================================
