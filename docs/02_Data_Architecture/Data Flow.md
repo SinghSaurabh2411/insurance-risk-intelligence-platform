@@ -4,268 +4,256 @@
 
 This document describes the end-to-end movement of data through the platform.
 
-The project follows a Medallion Architecture where data progresses through Bronze, Silver, and Gold layers before being consumed by downstream applications.
+The project follows a Medallion Architecture where data progresses through Bronze, Silver, and Gold layers before reaching planned downstream applications.
 
-The ETL pipeline is implemented using PySpark and orchestrated using Apache Airflow.
+The currently implemented ETL engine is PySpark. **Apache Airflow is planned as the orchestration layer and is not currently treated as implemented.**
 
 ---
 
 # End-to-End Data Flow
 
-```
-                                  Source Dataset (CSV)
-                                          │
-                                          │
-                                          ▼
-                                  PySpark Bronze ETL
-                                          │
-                                          ▼
-                                  BRONZE_POLICY_DATA
-                                          │
-                                          │
-                                  PySpark Silver ETL
-                                          │
-      ┌────────────────┬──────────────────┬──────────────┬──────────────────┐
-      ▼                ▼                  ▼              ▼                  ▼
-SILVER_POLICY    SILVER_CUSTOMER    SILVER_PRODUCT   SILVER_CLAIMS    SILVER_ENRICHMENT
-
-                                          │
-                            ──────────────┼──────────────
-                                          │
-                                   PySpark Gold ETL
-                                          │
-                  ┌──────────────┬──────────────┬──────────────┬──────────────┐
-                  ▼              ▼              ▼              ▼              ▼
-            DIM_POLICY   DIM_CUSTOMER      DIM_PRODUCT   DIM_CHANNEL     DIM_TIME
-                                          │
-                                  ┌───────┴────────┐
-                                  ▼                ▼
-                              FACT_POLICY      FACT_CLAIMS
-                              
-                                          │
-                                 ─────────┼─────────
-                                          │
-                             ┌────────────┼────────────┐
-                             ▼            ▼            ▼
-                          FastAPI      Streamlit    RAG / NL2SQL
-```
+~~~text
+Source Dataset (CSV)
+        │
+        ▼
+PySpark Bronze ETL
+        │
+        ▼
+BRONZE_POLICY_DATA
+        │
+        ▼
+PySpark Silver ETL
+        │
+        ├── SILVER_RECORD
+        ├── SILVER_TIME
+        ├── SILVER_POLICY
+        ├── SILVER_CUSTOMER
+        ├── SILVER_PRODUCT
+        ├── SILVER_CHANNEL
+        ├── SILVER_COVERAGE
+        └── SILVER_FINANCIAL
+        │
+        ▼
+PySpark Gold ETL
+        │
+        ├── DIM_POLICY
+        ├── DIM_CUSTOMER
+        ├── DIM_PRODUCT
+        ├── DIM_CHANNEL
+        ├── DIM_TIME
+        ├── FACT_POLICY
+        └── FACT_CLAIMS
+        │
+        ▼
+Planned consumers
+        ├── FastAPI
+        ├── Streamlit
+        └── RAG / NL2SQL
+~~~
 
 ---
 
 # Data Processing Flow
 
-The ETL pipeline processes the data through three logical layers.
-
-```
+~~~text
 Source CSV
       │
       ▼
-Bronze Layer
+Bronze Layer — implemented
       │
       ▼
-Silver Layer
+Silver Layer — logical design frozen; DDL/ETL pending
       │
       ▼
-Gold Layer
+Gold Layer — planned implementation
       │
       ▼
-Analytics & AI Applications
-```
+Planned Analytics & AI Applications
+~~~
 
 ---
 
 # Step 1 – Source Ingestion
 
-Input consists of a structured CSV dataset containing insurance policy information.
+Input consists of the insurance policy CSV dataset.
 
-The source dataset is treated as the authoritative source of truth.
-
-Although the dataset is static, the ETL pipeline is designed to support incremental processing using Oracle MERGE statements.
+The source dataset is treated as the source of truth for the Bronze ingestion process.
 
 ---
 
 # Step 2 – Bronze Layer
 
-The Bronze ETL performs:
+The implemented Bronze ETL performs:
 
-- CSV ingestion
-- Schema validation
-- Data type conversion
-- Basic data quality validation
+- CSV discovery and ingestion
+- Source schema validation
+- Technical date and numeric type conversion
+- Business-key validation
+- Record-level SHA-256 generation
+- ETL audit-column generation
 - Oracle loading into BRONZE_POLICY_DATA
+- File-level incremental detection
 
-No business transformations are performed.
+### Bronze incremental detection
 
-Purpose:
+For each source file:
 
-- Preserve source data
-- Maintain lineage
-- Provide a recoverable raw layer
+~~~text
+Calculate complete-file SHA-256
+          │
+          ▼
+Check ETL_CONTROL for:
+SOURCE_FILE + SOURCE_FILE_HASH + SUCCESS
+          │
+       ┌──┴──┐
+       │     │
+     match  no match
+       │     │
+      skip  process
+             │
+             ▼
+       Bronze APPEND
+~~~
+
+This is **file-level incremental processing**, not record-level MERGE/upsert.
 
 ---
 
 # Step 3 – Silver Layer
 
-The Silver ETL reads the Bronze table and separates the data into business entities.
+The Silver layer reads the Bronze data and separates it into eight subject-oriented tables:
 
-Business entities include:
+- SILVER_RECORD
+- SILVER_TIME
+- SILVER_POLICY
+- SILVER_CUSTOMER
+- SILVER_PRODUCT
+- SILVER_CHANNEL
+- SILVER_COVERAGE
+- SILVER_FINANCIAL
 
-- Policy
-- Customer
-- Product
-- Claims
-- Enrichment
+The frozen business observation grain is:
 
-Typical transformations include:
+~~~text
+(ID_POLICY, ID_INSURED, PERIOD)
+~~~
 
-- Data validation
-- Null handling
-- Standardization
-- Entity separation
-- Duplicate removal
-- Business rule validation
-- Incremental MERGE loading
+Silver is planned to use Oracle MERGE/upsert against this business grain:
+
+- Existing business observation → update current Silver representation
+- New business observation → insert
+- Business grain remains explicit and validated
+
+This is **not SCD Type 2**. Historical dimension versioning will be considered later for Gold dimensions where justified.
 
 ---
 
 # Step 4 – Gold Layer
 
-The Gold ETL builds a dimensional model.
+The planned Gold ETL will build a dimensional model.
 
-Dimension tables store descriptive business attributes.
+Dimension tables:
 
-Fact tables store measurable business metrics.
+- DIM_POLICY
+- DIM_CUSTOMER
+- DIM_PRODUCT
+- DIM_CHANNEL
+- DIM_TIME
 
-The Gold layer is optimized for analytical workloads.
+Fact tables:
 
----
+- FACT_POLICY
+- FACT_CLAIMS
 
-# Incremental Processing
-
-Although the dataset is static, the ETL pipeline is implemented as an incremental process to simulate a production-grade data engineering solution.
-
-Incremental loading uses Oracle MERGE statements.
-
-Business grain:
-
-```
-(ID_POLICY,
- ID_INSURED,
- PERIOD)
-```
-
-For every ETL execution:
-
-- Existing records are updated.
-- New records are inserted.
-- Duplicate records are prevented.
+The exact FACT_CLAIMS grain remains a future design decision because the source does not contain a separate claim-level entity.
 
 ---
 
-# Data Consumption
+# Planned Data Consumption
 
-The Gold layer serves as the single source for downstream applications.
+The Gold layer is the planned source for downstream applications.
 
-## FastAPI
+## FastAPI — Planned
 
-Provides REST APIs for accessing dimensional and fact data.
+Provides REST APIs for accessing dimensional and fact data after the API layer is implemented.
 
----
+## Streamlit — Planned
 
-## Streamlit
+Provides interactive dashboards after the application layer is implemented.
 
-Provides interactive dashboards for business users.
+## RAG — Planned
 
----
+Retrieves approved business metadata/documentation for natural-language assistance after the GenAI layer is implemented.
 
-## RAG
+## NL2SQL — Planned
 
-Retrieves business metadata and documentation to answer natural language questions.
+Converts natural-language questions into controlled SQL against the Gold schema after the NL2SQL capability is implemented.
 
----
-
-## NL2SQL
-
-Converts natural language queries into SQL statements executed against the Gold schema.
+These components are architectural targets, not current implementation claims.
 
 ---
 
-# Workflow Orchestration
+# Planned Workflow Orchestration
 
-Apache Airflow orchestrates the ETL workflow.
+Apache Airflow is the **planned orchestration layer**.
 
-Pipeline execution order:
+The target execution order is:
 
-```
+~~~text
 CSV
-
-↓
-
+ ↓
 Bronze ETL
-
-↓
-
+ ↓
 Silver ETL
-
-↓
-
+ ↓
 Gold ETL
-
-↓
-
+ ↓
 Data Validation
+ ↓
+API / Dashboard / AI refresh
+~~~
 
-↓
-
-API Refresh
-
-↓
-
-Dashboard Refresh
-```
+The current repository does not contain an implemented Airflow DAG, so Airflow is not described as an active production component.
 
 ---
 
 # Error Handling
 
-At each layer, the pipeline performs validation before continuing.
+Implemented Bronze validation includes:
 
-Validation includes:
+- Source schema validation
+- Data-type validation
+- Business-key NULL checks
+- Business-grain uniqueness validation
+- ETL control status tracking
+- Source-file hashing
+- Error capture in the control table
 
-- Schema validation
-- Data type validation
-- Mandatory field validation
-- Duplicate detection
-- Business rule validation
-
-Records failing validation are logged for investigation.
+Silver and Gold validation responsibilities are defined in the architecture but remain pending implementation.
 
 ---
 
 # Data Lineage
 
-```
+~~~text
 CSV
  │
  ▼
 BRONZE_POLICY_DATA
  │
  ▼
-Silver Tables
+Silver subject-area tables
  │
  ▼
-Gold Tables
+Gold dimensions / facts
  │
- ├────────► FastAPI
- │
- ├────────► Streamlit
- │
- ├────────► RAG
- │
- └────────► NL2SQL
-```
+ ├────────► Planned FastAPI
+ ├────────► Planned Streamlit
+ ├────────► Planned RAG
+ └────────► Planned NL2SQL
+~~~
 
-Every record can be traced from the Gold layer back to the original source dataset.
+Complete source-record lineage is preserved through the implemented Bronze layer and is planned to be propagated into Silver and Gold.
 
 ---
 
@@ -277,17 +265,28 @@ Every record can be traced from the Gold layer back to the original source datas
 | ETL Engine | PySpark |
 | Database | Oracle 21c XE |
 | Architecture | Medallion |
-| Incremental Strategy | MERGE |
-| Business Grain | (ID_POLICY, ID_INSURED, PERIOD) |
-| Workflow Orchestration | Apache Airflow |
-| API Layer | FastAPI |
-| Dashboard | Streamlit |
-| AI Layer | RAG + NL2SQL |
+| Bronze Incremental Strategy | SOURCE_FILE + SHA-256 |
+| Bronze Write Strategy | APPEND |
+| Silver Incremental Strategy | MERGE / UPSERT — planned |
+| Silver MERGE Key | (ID_POLICY, ID_INSURED, PERIOD) |
+| Workflow Orchestration | Apache Airflow — planned |
+| API Layer | FastAPI — planned |
+| Dashboard | Streamlit — planned |
+| AI Layer | RAG + NL2SQL — planned |
 
 ---
 
-# Summary
+# Implementation Status
 
-The data flow follows a structured Medallion Architecture in which raw data is ingested into the Bronze layer, transformed into business-oriented Silver tables, and modeled into Gold dimensional tables.
-
-The Gold layer acts as the single source of truth for analytics, dashboards, APIs, and AI-powered services while preserving full lineage back to the original source dataset.
+| Component | Status |
+|-----------|--------|
+| Bronze ETL | Implemented and validated end-to-end |
+| Silver logical model | Frozen |
+| Silver DDL | Pending |
+| Silver ETL | Pending |
+| Gold model | Target architecture / pending implementation |
+| Airflow | Planned |
+| FastAPI | Planned |
+| Streamlit | Planned |
+| RAG | Planned |
+| NL2SQL | Planned |
