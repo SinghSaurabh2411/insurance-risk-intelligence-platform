@@ -99,7 +99,7 @@ The Silver layer contains validated, standardized, and logically separated subje
 | Table | Purpose |
 |---------|----------|
 | SILVER_RECORD | Record-level identity and technical lineage |
-| SILVER_TIME | Observation and calendar-related attributes |
+| SILVER_TIME | Observation period |
 | SILVER_POLICY | Policy-related attributes |
 | SILVER_CUSTOMER | Insured-person attributes |
 | SILVER_PRODUCT | Insurance product attributes |
