@@ -14,6 +14,8 @@ CREATE TABLE SILVER_CUSTOMER
     PERIOD                  NUMBER       NOT NULL,
     DATE_EFFECT_INSURED     DATE,
     DATE_LAPSE_INSURED      DATE,
+    YEAR_EFFECT_INSURED     NUMBER,
+    YEAR_LAPSE_INSURED      NUMBER,
     SENIORITY_INSURED       NUMBER,
     GENDER                  VARCHAR2(5),
     AGE                     NUMBER,
@@ -23,6 +25,6 @@ CREATE TABLE SILVER_CUSTOMER
 );
 
 COMMENT ON TABLE SILVER_CUSTOMER IS
-'Silver customer subject at the source business observation grain.';
+'Silver customer subject at the source business observation grain, including insured effect/lapse year attributes.';
 
 COMMIT;
