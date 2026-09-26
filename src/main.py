@@ -2,11 +2,11 @@ import sys
 
 from config.config import PROJECT_NAME
 from utils.spark_session import create_spark_session
-from utils.logger import get_logger
+import logging
 from bronze.bronze_loader import run_bronze_pipeline
 from silver.silver_loader import run_silver_pipeline
 
-logger = get_logger(layer="application", module_name="main")
+logger = logging.getLogger("application.main")
 
 
 def main() -> int:
