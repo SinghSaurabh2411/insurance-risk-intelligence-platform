@@ -121,7 +121,7 @@ This is **file-level incremental processing**, not record-level MERGE/upsert.
 
 # Step 3 – Silver Layer
 
-The Silver layer reads the Bronze data and separates it into eight subject-oriented tables:
+The Silver layer reads the Bronze data and separates it into eight subject-oriented tables. `SILVER_TIME` contains only the distinct observation `PERIOD`; policy and insured lifecycle year attributes remain with their respective subject areas.
 
 - SILVER_RECORD
 - SILVER_TIME
