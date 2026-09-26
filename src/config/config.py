@@ -281,16 +281,13 @@ AUDIT_COLUMNS = [
 #
 # Lifecycle:
 #
-# RUNNING
+ # STARTED
 #    ↓
 # SUCCESS
 #
-# RUNNING
+# STARTED
 #    ↓
 # FAILED
-#
-# SKIPPED
-#    → file was intentionally not processed
 #
 # =============================================================================
 
@@ -299,8 +296,6 @@ STATUS_RUNNING = "STARTED"
 STATUS_SUCCESS = "SUCCESS"
 
 STATUS_FAILED = "FAILED"
-
-STATUS_SKIPPED = "SKIPPED"
 
 
 # =============================================================================
