@@ -11,7 +11,7 @@ Description
 Indexes required for:
 
 • Incremental ETL
-• MERGE Processing
+• Load-level incremental processing
 • Record Change Detection
 • Time-based filtering
 
