@@ -8,9 +8,9 @@ logger = get_logger(layer="silver", module_name="silver_transform")
 
 SILVER_PROJECTIONS: Dict[str, list] = {
     "SILVER_RECORD": ["ID","ID_policy","ID_insured","period","RECORD_HASH","LOAD_ID","LOAD_TIMESTAMP","SOURCE_FILE","ETL_CREATED_BY"],
-    "SILVER_TIME": ["period","year_effect_insured","year_lapse_insured","year_effect_policy","year_lapse_policy"],
-    "SILVER_POLICY": ["ID_policy","ID_insured","period","date_effect_policy","date_lapse_policy","seniority_policy","type_policy","type_policy_dg","new_business","lapse"],
-    "SILVER_CUSTOMER": ["ID_insured","ID_policy","period","date_effect_insured","date_lapse_insured","seniority_insured","gender","age"],
+    "SILVER_TIME": ["period"],
+    "SILVER_POLICY": ["ID_policy","ID_insured","period","date_effect_policy","date_lapse_policy","year_effect_policy","year_lapse_policy","seniority_policy","type_policy","type_policy_dg","new_business","lapse"],
+    "SILVER_CUSTOMER": ["ID_insured","ID_policy","period","date_effect_insured","date_lapse_insured","year_effect_insured","year_lapse_insured","seniority_insured","gender","age"],
     "SILVER_PRODUCT": ["ID_policy","ID_insured","period","type_product","reimbursement"],
     "SILVER_CHANNEL": ["ID_policy","ID_insured","period","distribution_channel"],
     "SILVER_COVERAGE": ["ID_policy","ID_insured","period","exposure_time","n_medical_services"],
