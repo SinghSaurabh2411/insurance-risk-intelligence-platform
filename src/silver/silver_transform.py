@@ -26,8 +26,19 @@ def validate_projection_definitions() -> None:
         if table_name != "SILVER_TIME" and not set(SILVER_MERGE_KEY).issubset(columns):
             raise ValueError(f"{table_name} must contain {SILVER_MERGE_KEY}")
 
+def _normalize_bronze_column_names(bronze_dataframe: DataFrame) -> DataFrame:
+    """Normalize Oracle JDBC uppercase identifiers to canonical Bronze names."""
+    canonical = set(EXPECTED_SCHEMA) | set(AUDIT_COLUMNS)
+    for source in list(bronze_dataframe.columns):
+        target = next((c for c in canonical if c.upper() == source.upper()), source)
+        if source != target:
+            bronze_dataframe = bronze_dataframe.withColumnRenamed(source, target)
+    return bronze_dataframe
+
+
 def project_silver_tables(bronze_dataframe: DataFrame) -> Dict[str, DataFrame]:
     validate_projection_definitions()
+    bronze_dataframe = _normalize_bronze_column_names(bronze_dataframe)
     projections = {}
     for table_name, columns in SILVER_PROJECTIONS.items():
         missing = [c for c in columns if c not in bronze_dataframe.columns]
