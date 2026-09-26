@@ -156,23 +156,39 @@ BRONZE_POLICY_TABLE_FQN = (
 #
 # =============================================================================
 
-SILVER_CUSTOMER_TABLE = "SILVER_CUSTOMER"
+SILVER_RECORD_TABLE = "SILVER_RECORD"
+
+SILVER_TIME_TABLE = "SILVER_TIME"
 
 SILVER_POLICY_TABLE = "SILVER_POLICY"
+
+SILVER_CUSTOMER_TABLE = "SILVER_CUSTOMER"
 
 SILVER_PRODUCT_TABLE = "SILVER_PRODUCT"
 
 SILVER_CHANNEL_TABLE = "SILVER_CHANNEL"
 
+SILVER_COVERAGE_TABLE = "SILVER_COVERAGE"
+
+SILVER_FINANCIAL_TABLE = "SILVER_FINANCIAL"
+
 
 # Fully qualified Silver tables
 
-SILVER_CUSTOMER_TABLE_FQN = (
-    f"{SILVER_SCHEMA}.{SILVER_CUSTOMER_TABLE}"
+SILVER_RECORD_TABLE_FQN = (
+    f"{SILVER_SCHEMA}.{SILVER_RECORD_TABLE}"
+)
+
+SILVER_TIME_TABLE_FQN = (
+    f"{SILVER_SCHEMA}.{SILVER_TIME_TABLE}"
 )
 
 SILVER_POLICY_TABLE_FQN = (
     f"{SILVER_SCHEMA}.{SILVER_POLICY_TABLE}"
+)
+
+SILVER_CUSTOMER_TABLE_FQN = (
+    f"{SILVER_SCHEMA}.{SILVER_CUSTOMER_TABLE}"
 )
 
 SILVER_PRODUCT_TABLE_FQN = (
@@ -181,6 +197,14 @@ SILVER_PRODUCT_TABLE_FQN = (
 
 SILVER_CHANNEL_TABLE_FQN = (
     f"{SILVER_SCHEMA}.{SILVER_CHANNEL_TABLE}"
+)
+
+SILVER_COVERAGE_TABLE_FQN = (
+    f"{SILVER_SCHEMA}.{SILVER_COVERAGE_TABLE}"
+)
+
+SILVER_FINANCIAL_TABLE_FQN = (
+    f"{SILVER_SCHEMA}.{SILVER_FINANCIAL_TABLE}"
 )
 
 
@@ -263,6 +287,18 @@ BUSINESS_KEY = [
 
 
 # =============================================================================
+# SILVER MERGE KEY
+# =============================================================================
+
+# Frozen business observation grain used for Silver MERGE/upsert processing.
+SILVER_MERGE_KEY = [
+    "ID_policy",
+    "ID_insured",
+    "period"
+]
+
+
+# =============================================================================
 # AUDIT COLUMNS
 # =============================================================================
 
@@ -326,6 +362,9 @@ PROCESS_SOURCE_FILES = True
 # Bronze persistence is performed through Oracle JDBC.
 
 BRONZE_WRITE_MODE = "append"
+
+# Silver persistence is planned as a business-grain MERGE/upsert.
+SILVER_WRITE_MODE = "merge"
 
 
 # =============================================================================
