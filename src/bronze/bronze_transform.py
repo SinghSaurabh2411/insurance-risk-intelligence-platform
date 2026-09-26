@@ -59,7 +59,7 @@ from bronze.bronze_validator import (
     DATE_COLUMNS
 )
 
-from src.utils.hash_generator import (
+from utils.hash_generator import (
     add_record_hash
 )
 
