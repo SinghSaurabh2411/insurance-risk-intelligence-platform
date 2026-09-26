@@ -46,7 +46,7 @@ from config.config import (
     BRONZE_WRITE_MODE,
     CSV_DELIMITER,
     CSV_HAS_HEADER,
-    STATUS_RUNNING,
+    STATUS_STARTED,
     STATUS_SUCCESS,
     STATUS_FAILED,
     ETL_CREATED_BY,
@@ -315,7 +315,7 @@ def process_file(
 
         logger.info(
             "ETL load registered as %s | LOAD_ID=%s",
-            STATUS_RUNNING,
+            STATUS_STARTED,
             load_id,
         )
 
