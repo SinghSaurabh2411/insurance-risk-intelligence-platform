@@ -35,6 +35,6 @@ def project_silver_tables(bronze_dataframe: DataFrame) -> Dict[str, DataFrame]:
             raise ValueError(f"Bronze DataFrame missing {table_name} columns: {missing}")
         projections[table_name] = bronze_dataframe.select(*columns)
         if table_name == "SILVER_TIME":
-            projections[table_name] = projections[table_name].dropDuplicates(["period"])
+            projections[table_name] = projections[table_name].dropDuplicates()
     logger.info("Created %d approved Silver projections.", len(projections))
     return projections
