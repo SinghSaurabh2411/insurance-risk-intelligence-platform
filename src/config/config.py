@@ -294,7 +294,7 @@ AUDIT_COLUMNS = [
 #
 # =============================================================================
 
-STATUS_RUNNING = "RUNNING"
+STATUS_RUNNING = "STARTED"
 
 STATUS_SUCCESS = "SUCCESS"
 
