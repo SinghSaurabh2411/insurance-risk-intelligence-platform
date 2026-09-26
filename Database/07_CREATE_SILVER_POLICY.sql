@@ -14,6 +14,8 @@ CREATE TABLE SILVER_POLICY
     PERIOD                  NUMBER       NOT NULL,
     DATE_EFFECT_POLICY      DATE,
     DATE_LAPSE_POLICY       DATE,
+    YEAR_EFFECT_POLICY      NUMBER,
+    YEAR_LAPSE_POLICY       NUMBER,
     SENIORITY_POLICY        NUMBER,
     TYPE_POLICY             VARCHAR2(20),
     TYPE_POLICY_DG          VARCHAR2(20),
@@ -25,6 +27,6 @@ CREATE TABLE SILVER_POLICY
 );
 
 COMMENT ON TABLE SILVER_POLICY IS
-'Silver policy subject at the source business observation grain.';
+'Silver policy subject at the source business observation grain, including policy effect/lapse year attributes.';
 
 COMMIT;
