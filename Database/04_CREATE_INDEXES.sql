@@ -11,7 +11,7 @@ Description
 Indexes required for:
 
 • Incremental ETL
-• Load-level incremental processing
+• Incremental load support
 • Record Change Detection
 • Time-based filtering
 
