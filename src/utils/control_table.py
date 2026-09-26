@@ -60,7 +60,8 @@ LOAD_ID_SEQUENCE = f"{CONTROL_SCHEMA}.SEQ_LOAD_ID"
 # ==========================================================
 
 def is_file_processed(
-    source_file: str
+    source_file: str,
+    source_file_hash: str
 ) -> bool:
     """
     Checks whether a source file has already been
