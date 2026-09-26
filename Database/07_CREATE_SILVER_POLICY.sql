@@ -27,6 +27,6 @@ CREATE TABLE SILVER_POLICY
 );
 
 COMMENT ON TABLE SILVER_POLICY IS
-'Silver policy subject at the source business observation grain, including policy effect/lapse year attributes.';
+'Silver policy subject at the source business observation grain, including policy lifecycle year attributes.';
 
 COMMIT;
