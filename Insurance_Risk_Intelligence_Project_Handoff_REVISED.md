@@ -230,8 +230,11 @@ GOLD
   FK validated / measure reconciled within numeric precision tolerance /
   frozen
 
-ORCHESTRATION / AIRFLOW
-  planned / not implemented
+ORCHESTRATION
+  implemented / stage sequencing and fail-fast behavior
+
+AIRFLOW DAG
+  implemented / runtime not yet validated
 
 FASTAPI
   planned / not implemented
@@ -243,12 +246,34 @@ RAG / VECTOR DB / LLM
   planned / not implemented
 ```
 
-## Next sequence
+## Orchestration — implemented, runtime validation pending
 
-The data-engineering foundation is complete. Continue with:
+The repository now contains a thin orchestration layer that sequences the frozen stages without moving layer-specific transformation or persistence logic:
 
 ```text
-1. Orchestration
+BRONZE -> SILVER -> GOLD
+```
+
+Implementation:
+
+```text
+src/orchestration/pipeline.py
+src/orchestration/__init__.py
+dags/insurance_risk_intelligence_pipeline.py
+```
+
+The normal `src.main` entry point now delegates to the orchestration layer.
+
+The Airflow DAG is configured as `bronze >> silver >> gold`, with `catchup=False` and `max_active_runs=1`. It intentionally has no production schedule yet.
+
+Airflow runtime execution has **not** been validated in the current environment. Therefore the DAG is implemented code, not execution evidence.
+
+## Next sequence
+
+The next work is operational validation of orchestration, followed by:
+
+```text
+1. Airflow/runtime validation
 2. API / analytics interfaces
 3. GenAI / RAG capabilities
 ```
