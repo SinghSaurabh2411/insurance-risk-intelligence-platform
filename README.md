@@ -15,7 +15,8 @@ SOURCE CSV -> BRONZE -> SILVER -> GOLD
 | Bronze | Implemented, execution validated, frozen |
 | Silver | Implemented, DQ/reconciliation/rerun validated, frozen |
 | Gold | Implemented, DQ/reconciliation/FK validation completed, frozen |
-| Orchestration / Airflow | Planned |
+| Orchestration | Implemented, runtime validation pending |
+| Airflow DAG | Implemented, runtime validation pending |
 | FastAPI | Planned |
 | Streamlit | Planned |
 | GenAI / RAG / LLM | Planned |
@@ -97,12 +98,26 @@ python -m src.main
 
 Credentials and local JDBC drivers remain outside Git.
 
-## Next phase
+## Orchestration
 
-The data-engineering foundation is complete. Next:
+The repository now provides a thin orchestration layer in `src/orchestration/pipeline.py` and an Airflow DAG in `dags/insurance_risk_intelligence_pipeline.py`.
+
+The execution contract is:
 
 ```text
-Orchestration
+BRONZE -> SILVER -> GOLD
+```
+
+The application entry point delegates to the orchestrator. Stage failures stop downstream execution. The Airflow DAG is intentionally unscheduled (`schedule=None`) until an operational schedule is explicitly defined.
+
+Airflow runtime execution is not yet validated.
+
+## Next phase
+
+The data-engineering foundation and orchestration implementation are complete. Next:
+
+```text
+Airflow/runtime validation
     ->
 API / analytics interfaces
     ->
