@@ -252,7 +252,7 @@ DIM_TIME_FQN = (
 
 FACT_POLICY = "FACT_POLICY"
 
-FACT_CLAIMS = "FACT_CLAIMS"
+GOLD_STAGE_TABLE = "GOLD_STAGE"
 
 
 # Fully qualified Gold fact tables
@@ -261,8 +261,8 @@ FACT_POLICY_FQN = (
     f"{GOLD_SCHEMA}.{FACT_POLICY}"
 )
 
-FACT_CLAIMS_FQN = (
-    f"{GOLD_SCHEMA}.{FACT_CLAIMS}"
+GOLD_STAGE_FQN = (
+    f"{GOLD_SCHEMA}.{GOLD_STAGE_TABLE}"
 )
 
 
@@ -363,7 +363,8 @@ PROCESS_SOURCE_FILES = True
 
 BRONZE_WRITE_MODE = "append"
 
-# Silver persistence is planned as a business-grain MERGE/upsert.
+ # Silver persistence is a business-grain MERGE/upsert.
+# Gold currently uses full refresh because the frozen analytical dataset is static.
 SILVER_WRITE_MODE = "merge"
 
 
