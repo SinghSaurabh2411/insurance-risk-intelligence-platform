@@ -1,13 +1,13 @@
 import sys
+import logging
 
 from config.config import PROJECT_NAME
 from utils.spark_session import create_spark_session
-import logging
 from bronze.bronze_loader import run_bronze_pipeline
 from silver.silver_loader import run_silver_pipeline
+from gold.gold_loader import run_gold_pipeline
 
 logger = logging.getLogger("application.main")
-
 
 def main() -> int:
     spark = None
@@ -16,6 +16,7 @@ def main() -> int:
         spark = create_spark_session()
         run_bronze_pipeline(spark=spark)
         run_silver_pipeline(spark=spark)
+        run_gold_pipeline(spark=spark)
         logger.info("Application completed successfully.")
         return 0
     except Exception as exception:
@@ -24,7 +25,6 @@ def main() -> int:
     finally:
         if spark is not None:
             spark.stop()
-
 
 if __name__ == "__main__":
     sys.exit(main())
