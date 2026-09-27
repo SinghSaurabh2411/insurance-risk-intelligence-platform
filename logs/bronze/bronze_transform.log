@@ -1,0 +1,24 @@
+2026-09-26 23:03:12 | INFO     | bronze.bronze_transform | bronze_transform.py:484 | Starting Bronze transformation for file: BASE_DATA.csv
+2026-09-26 23:03:12 | INFO     | bronze.bronze_transform | bronze_transform.py:157 | Starting date validation and transformation using format: dd-MM-yyyy
+2026-09-26 23:03:12 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_effect_insured
+2026-09-26 23:03:13 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_lapse_insured
+2026-09-26 23:03:13 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_effect_policy
+2026-09-26 23:03:13 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_lapse_policy
+2026-09-26 23:03:13 | INFO     | bronze.bronze_transform | bronze_transform.py:239 | Date validation and transformation completed.
+2026-09-26 23:03:13 | INFO     | bronze.bronze_transform | bronze_transform.py:267 | Starting numeric column transformation.
+2026-09-26 23:03:14 | INFO     | bronze.bronze_transform | bronze_transform.py:335 | Numeric column transformation completed.
+2026-09-26 23:03:14 | INFO     | bronze.bronze_transform | bronze_transform.py:432 | Generating RECORD_HASH using 42 source columns.
+2026-09-26 23:03:14 | INFO     | bronze.bronze_transform | bronze_transform.py:375 | Adding Bronze audit columns.
+2026-09-26 23:03:14 | INFO     | bronze.bronze_transform | bronze_transform.py:524 | Bronze transformation completed for file: BASE_DATA.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_transform | bronze_transform.py:484 | Starting Bronze transformation for file: policy_test.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_transform | bronze_transform.py:157 | Starting date validation and transformation using format: dd-MM-yyyy
+2026-09-26 23:03:22 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_effect_insured
+2026-09-26 23:03:22 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_lapse_insured
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_effect_policy
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:234 | Successfully transformed date column: date_lapse_policy
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:239 | Date validation and transformation completed.
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:267 | Starting numeric column transformation.
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:335 | Numeric column transformation completed.
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:432 | Generating RECORD_HASH using 42 source columns.
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:375 | Adding Bronze audit columns.
+2026-09-26 23:03:23 | INFO     | bronze.bronze_transform | bronze_transform.py:524 | Bronze transformation completed for file: policy_test.csv

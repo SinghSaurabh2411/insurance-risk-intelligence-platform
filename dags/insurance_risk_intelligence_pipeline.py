@@ -1,14 +1,20 @@
 """Airflow DAG for the Insurance Risk Intelligence Platform."""
 
-from pathlib import Path
+import os
 import sys
+from pathlib import Path
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from pendulum import datetime
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-SRC_ROOT = REPOSITORY_ROOT / "src"
+
+IRIP_ROOT = Path(
+    os.getenv("IRIP_PROJECT_ROOT", Path(__file__).resolve().parents[1])
+)
+
+SRC_ROOT = IRIP_ROOT / "src"
+
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 

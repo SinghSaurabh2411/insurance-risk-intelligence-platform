@@ -1,0 +1,25 @@
+2026-09-26 23:03:06 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: False
+2026-09-26 23:03:06 | INFO     | bronze.control_table | control_table.py:101 | File 'policy_test.csv' with hash '55de5568c7af3c74ba070fe94a5404686c2a3b2a94deecec1cccad71df20e37c' processed status: False
+2026-09-26 23:03:06 | INFO     | bronze.control_table | control_table.py:153 | Generated LOAD_ID: 2
+2026-09-26 23:03:11 | INFO     | bronze.control_table | control_table.py:246 | Registered ETL load: LOAD_ID=2, FILE=BASE_DATA.csv
+2026-09-26 23:03:22 | INFO     | bronze.control_table | control_table.py:346 | Updated LOAD_ID=2 to status=SUCCESS
+2026-09-26 23:03:22 | INFO     | bronze.control_table | control_table.py:153 | Generated LOAD_ID: 3
+2026-09-26 23:03:22 | INFO     | bronze.control_table | control_table.py:246 | Registered ETL load: LOAD_ID=3, FILE=policy_test.csv
+2026-09-26 23:03:24 | INFO     | bronze.control_table | control_table.py:346 | Updated LOAD_ID=3 to status=SUCCESS
+2026-09-27 00:06:28 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 00:06:28 | INFO     | bronze.control_table | control_table.py:101 | File 'policy_test.csv' with hash '55de5568c7af3c74ba070fe94a5404686c2a3b2a94deecec1cccad71df20e37c' processed status: True
+2026-09-27 01:50:35 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 01:50:35 | INFO     | bronze.control_table | control_table.py:101 | File 'policy_test.csv' with hash '55de5568c7af3c74ba070fe94a5404686c2a3b2a94deecec1cccad71df20e37c' processed status: True
+2026-09-27 01:53:21 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 01:53:21 | INFO     | bronze.control_table | control_table.py:101 | File 'policy_test.csv' with hash '55de5568c7af3c74ba070fe94a5404686c2a3b2a94deecec1cccad71df20e37c' processed status: True
+2026-09-27 02:00:18 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 02:15:39 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 02:22:14 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 02:27:56 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 02:31:31 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 02:43:29 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 03:04:11 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 03:19:51 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 03:28:55 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 20:52:34 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True
+2026-09-27 20:56:17 | INFO     | bronze.control_table | control_table.py:101 | File 'BASE_DATA.csv' with hash 'f992ee6ad24f88f2136b9d52038b37be85cceebc64f2ec6bd86e271d2a665cbb' processed status: True

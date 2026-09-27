@@ -1,0 +1,160 @@
+2026-09-27 01:50:35 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 01:50:37 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 01:53:21 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 01:53:23 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:00:18 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:00:20 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:15:39 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:15:41 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:16:02 | ERROR    | bronze.oracle_helper | oracle_helper.py:320 | Oracle SQL execution failed.
+Traceback (most recent call last):
+  File "E:\Portfolio\GenAI\insurance-risk-intelligence-platform\src\utils\oracle_helper.py", line 307, in execute_sql
+    cursor.execute(sql_statement)
+  File "C:\Users\saura\AppData\Local\Programs\Python\Python310\lib\site-packages\oracledb\cursor.py", line 844, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thin/cursor.pyx", line 277, in oracledb.thin_impl.ThinCursorImpl.execute
+  File "src/oracledb/impl/thin/protocol.pyx", line 501, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 502, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 494, in oracledb.thin_impl.Protocol._process_message
+  File "src/oracledb/impl/thin/messages/base.pyx", line 102, in oracledb.thin_impl.Message._check_and_raise_exception
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+2026-09-27 02:22:14 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:22:16 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:22:36 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:22:48 | ERROR    | bronze.oracle_helper | oracle_helper.py:320 | Oracle SQL execution failed.
+Traceback (most recent call last):
+  File "E:\Portfolio\GenAI\insurance-risk-intelligence-platform\src\utils\oracle_helper.py", line 307, in execute_sql
+    cursor.execute(sql_statement)
+  File "C:\Users\saura\AppData\Local\Programs\Python\Python310\lib\site-packages\oracledb\cursor.py", line 844, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thin/cursor.pyx", line 277, in oracledb.thin_impl.ThinCursorImpl.execute
+  File "src/oracledb/impl/thin/protocol.pyx", line 501, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 502, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 494, in oracledb.thin_impl.Protocol._process_message
+  File "src/oracledb/impl/thin/messages/base.pyx", line 102, in oracledb.thin_impl.Message._check_and_raise_exception
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+2026-09-27 02:27:56 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:27:58 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:28:17 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:28:35 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:28:35 | ERROR    | bronze.oracle_helper | oracle_helper.py:320 | Oracle SQL execution failed.
+Traceback (most recent call last):
+  File "E:\Portfolio\GenAI\insurance-risk-intelligence-platform\src\utils\oracle_helper.py", line 307, in execute_sql
+    cursor.execute(sql_statement)
+  File "C:\Users\saura\AppData\Local\Programs\Python\Python310\lib\site-packages\oracledb\cursor.py", line 844, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thin/cursor.pyx", line 277, in oracledb.thin_impl.ThinCursorImpl.execute
+  File "src/oracledb/impl/thin/protocol.pyx", line 501, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 502, in oracledb.thin_impl.Protocol._process_single_message
+  File "src/oracledb/impl/thin/protocol.pyx", line 494, in oracledb.thin_impl.Protocol._process_message
+  File "src/oracledb/impl/thin/messages/base.pyx", line 102, in oracledb.thin_impl.Message._check_and_raise_exception
+oracledb.exceptions.DatabaseError: ORA-00927: missing equal sign
+Help: https://docs.oracle.com/error-help/db/ora-00927/
+2026-09-27 02:31:31 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:31:33 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:31:53 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:08 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:08 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:10 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:13 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:16 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:18 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:20 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:32:23 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:43:29 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:43:31 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 02:43:52 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:44:05 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 02:44:05 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:04:11 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:04:13 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:04:48 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:05:12 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:05:13 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:19:51 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:19:56 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:20:43 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:21:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:21:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:21:11 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:28:55 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:29:03 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 03:29:53 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:18 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:18 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:21 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:24 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:27 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:30 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:33 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 03:30:36 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:52:34 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 20:52:36 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 20:52:54 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:10 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:14 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:16 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:19 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:22 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_RECORD
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_RECORD
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_TIME
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_TIME
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_POLICY
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_POLICY
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_CUSTOMER
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_CUSTOMER
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_PRODUCT
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_PRODUCT
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_CHANNEL
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_CHANNEL
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_COVERAGE
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_COVERAGE
+2026-09-27 20:53:25 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_FINANCIAL
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_FINANCIAL
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:53:26 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:17 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 20:56:18 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-27 20:56:36 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:48 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:48 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:51 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:54 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:56:57 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:00 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:03 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_RECORD
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_RECORD
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_TIME
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_TIME
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_POLICY
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_POLICY
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_CUSTOMER
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_CUSTOMER
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_PRODUCT
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_PRODUCT
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_CHANNEL
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_CHANNEL
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_COVERAGE
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_COVERAGE
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:172 | Reading Oracle table: DWH_SILVER.SILVER_FINANCIAL
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:188 | Successfully created DataFrame from: DWH_SILVER.SILVER_FINANCIAL
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:06 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.
+2026-09-27 20:57:07 | INFO     | bronze.oracle_helper | oracle_helper.py:311 | Oracle SQL executed successfully.

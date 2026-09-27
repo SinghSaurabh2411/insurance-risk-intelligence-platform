@@ -1,0 +1,20 @@
+2026-09-26 23:02:43 | INFO     | bronze.main | main.py:71 | ================================================================
+2026-09-26 23:02:43 | INFO     | bronze.main | main.py:75 | Starting Insurance Risk Intelligence Platform
+2026-09-26 23:02:43 | INFO     | bronze.main | main.py:86 | Creating SparkSession.
+2026-09-26 23:03:06 | INFO     | bronze.main | main.py:92 | SparkSession created successfully.
+2026-09-26 23:03:06 | INFO     | bronze.main | main.py:100 | Starting Bronze ETL pipeline.
+2026-09-26 23:03:24 | INFO     | bronze.main | main.py:108 | Bronze ETL pipeline completed successfully.
+2026-09-26 23:03:24 | INFO     | bronze.main | main.py:112 | Application completed successfully.
+2026-09-26 23:03:24 | INFO     | bronze.main | main.py:137 | Stopping SparkSession.
+2026-09-26 23:03:24 | INFO     | bronze.main | main.py:143 | SparkSession stopped successfully.
+2026-09-26 23:03:24 | INFO     | bronze.main | main.py:153 | ================================================================
+2026-09-27 00:06:23 | INFO     | bronze.main | main.py:71 | ================================================================
+2026-09-27 00:06:23 | INFO     | bronze.main | main.py:75 | Starting Insurance Risk Intelligence Platform
+2026-09-27 00:06:23 | INFO     | bronze.main | main.py:86 | Creating SparkSession.
+2026-09-27 00:06:27 | INFO     | bronze.main | main.py:92 | SparkSession created successfully.
+2026-09-27 00:06:27 | INFO     | bronze.main | main.py:100 | Starting Bronze ETL pipeline.
+2026-09-27 00:06:28 | INFO     | bronze.main | main.py:108 | Bronze ETL pipeline completed successfully.
+2026-09-27 00:06:28 | INFO     | bronze.main | main.py:112 | Application completed successfully.
+2026-09-27 00:06:28 | INFO     | bronze.main | main.py:137 | Stopping SparkSession.
+2026-09-27 00:06:28 | INFO     | bronze.main | main.py:143 | SparkSession stopped successfully.
+2026-09-27 00:06:28 | INFO     | bronze.main | main.py:153 | ================================================================

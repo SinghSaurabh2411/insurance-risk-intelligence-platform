@@ -1,0 +1,14 @@
+2026-09-26 23:03:11 | INFO     | bronze.bronze_validator | bronze_validator.py:543 | Starting Bronze source validation.
+2026-09-26 23:03:11 | INFO     | bronze.bronze_validator | bronze_validator.py:504 | Source dataset contains records.
+2026-09-26 23:03:11 | INFO     | bronze.bronze_validator | bronze_validator.py:261 | Column validation successful.
+2026-09-26 23:03:11 | INFO     | bronze.bronze_validator | bronze_validator.py:336 | Source data type validation successful.
+2026-09-26 23:03:11 | INFO     | bronze.bronze_validator | bronze_validator.py:413 | Business-key NULL validation successful.
+2026-09-26 23:03:12 | INFO     | bronze.bronze_validator | bronze_validator.py:466 | Business-key uniqueness validation successful.
+2026-09-26 23:03:12 | INFO     | bronze.bronze_validator | bronze_validator.py:587 | Bronze source validation completed successfully.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:543 | Starting Bronze source validation.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:504 | Source dataset contains records.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:261 | Column validation successful.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:336 | Source data type validation successful.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:413 | Business-key NULL validation successful.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:466 | Business-key uniqueness validation successful.
+2026-09-26 23:03:22 | INFO     | bronze.bronze_validator | bronze_validator.py:587 | Bronze source validation completed successfully.

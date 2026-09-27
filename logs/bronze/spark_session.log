@@ -125,3 +125,93 @@
 2026-08-30 01:59:43 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
 2026-08-30 01:59:43 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
 2026-08-30 01:59:43 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-26 23:02:43 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-26 23:02:43 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-26 23:02:43 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-26 23:03:06 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-26 23:03:06 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-26 23:03:06 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 00:06:23 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 00:06:23 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 00:06:23 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 00:06:27 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 00:06:27 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 00:06:27 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 01:50:31 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 01:50:31 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 01:50:31 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 01:50:35 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 01:50:35 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 01:50:35 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 01:53:18 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 01:53:18 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 01:53:18 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 01:53:21 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 01:53:21 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 01:53:21 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:00:15 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:00:15 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:00:15 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:00:18 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:00:18 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:00:18 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:15:36 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:15:36 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:15:36 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:15:39 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:15:39 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:15:39 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:22:11 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:22:11 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:22:11 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:22:14 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:22:14 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:22:14 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:27:53 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:27:53 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:27:53 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:27:56 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:27:56 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:27:56 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:31:28 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:31:28 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:31:28 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:31:31 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:31:31 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:31:31 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 02:43:26 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 02:43:26 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 02:43:26 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 02:43:29 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 02:43:29 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 02:43:29 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 03:04:08 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 03:04:08 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 03:04:08 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 03:04:11 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 03:04:11 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 03:04:11 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 03:19:48 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 03:19:48 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 03:19:48 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 03:19:51 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 03:19:51 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 03:19:51 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 03:28:51 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 03:28:51 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 03:28:51 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 03:28:54 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 03:28:54 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 03:28:54 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 20:52:11 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 20:52:11 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 20:52:11 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 20:52:34 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 20:52:34 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 20:52:34 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.
+2026-09-27 20:56:14 | INFO     | bronze.spark_session | spark_session.py:101 | Creating Spark Session...
+2026-09-27 20:56:14 | INFO     | bronze.spark_session | spark_session.py:130 | Log4j2 configuration found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\log4j2.properties
+2026-09-27 20:56:14 | INFO     | bronze.spark_session | spark_session.py:157 | Oracle JDBC driver found: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\drivers\ojdbc8.jar
+2026-09-27 20:56:17 | INFO     | bronze.spark_session | spark_session.py:261 | Spark Version : 3.5.4
+2026-09-27 20:56:17 | INFO     | bronze.spark_session | spark_session.py:266 | Spark Master : local[*]
+2026-09-27 20:56:17 | INFO     | bronze.spark_session | spark_session.py:271 | Spark Session Created Successfully.

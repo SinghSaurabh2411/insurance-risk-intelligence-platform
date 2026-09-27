@@ -1,0 +1,98 @@
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:485 | Found 2 unprocessed source file(s).
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:260 | ================================================================
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:264 | Starting Bronze processing | file=BASE_DATA.csv
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:277 | Generated LOAD_ID=2 | file=BASE_DATA.csv
+2026-09-26 23:03:06 | INFO     | bronze.bronze_loader | bronze_loader.py:131 | Reading source file: BASE_DATA.csv
+2026-09-26 23:03:10 | INFO     | bronze.bronze_loader | bronze_loader.py:157 | Successfully read source file: BASE_DATA.csv
+2026-09-26 23:03:11 | INFO     | bronze.bronze_loader | bronze_loader.py:316 | ETL load registered as STARTED | LOAD_ID=2
+2026-09-26 23:03:12 | INFO     | bronze.bronze_loader | bronze_loader.py:330 | Bronze validation successful | LOAD_ID=2
+2026-09-26 23:03:14 | INFO     | bronze.bronze_loader | bronze_loader.py:346 | Bronze transformation successful | LOAD_ID=2
+2026-09-26 23:03:14 | INFO     | bronze.bronze_loader | bronze_loader.py:190 | Writing Bronze data to: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:224 | Bronze data successfully written to: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:371 | Bronze load completed successfully | LOAD_ID=2 | file=BASE_DATA.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:260 | ================================================================
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:264 | Starting Bronze processing | file=policy_test.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:277 | Generated LOAD_ID=3 | file=policy_test.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:131 | Reading source file: policy_test.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:157 | Successfully read source file: policy_test.csv
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:316 | ETL load registered as STARTED | LOAD_ID=3
+2026-09-26 23:03:22 | INFO     | bronze.bronze_loader | bronze_loader.py:330 | Bronze validation successful | LOAD_ID=3
+2026-09-26 23:03:23 | INFO     | bronze.bronze_loader | bronze_loader.py:346 | Bronze transformation successful | LOAD_ID=3
+2026-09-26 23:03:23 | INFO     | bronze.bronze_loader | bronze_loader.py:190 | Writing Bronze data to: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-26 23:03:24 | INFO     | bronze.bronze_loader | bronze_loader.py:224 | Bronze data successfully written to: DWH_BRONZE.BRONZE_POLICY_DATA
+2026-09-26 23:03:24 | INFO     | bronze.bronze_loader | bronze_loader.py:371 | Bronze load completed successfully | LOAD_ID=3 | file=policy_test.csv
+2026-09-26 23:03:24 | INFO     | bronze.bronze_loader | bronze_loader.py:529 | Bronze ETL pipeline completed successfully.
+2026-09-26 23:03:24 | INFO     | bronze.bronze_loader | bronze_loader.py:533 | ================================================================
+2026-09-27 00:06:27 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 00:06:27 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 00:06:27 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 00:06:28 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 00:06:28 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 01:50:35 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 01:50:35 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 01:50:35 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 01:50:35 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 01:50:35 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 01:53:21 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 01:53:21 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 01:53:21 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 01:53:21 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 01:53:21 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:00:18 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:00:18 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:00:18 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:00:18 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:00:18 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:15:39 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:15:39 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:15:39 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:15:39 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:15:39 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:22:14 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:22:14 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:22:14 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:22:14 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:22:14 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:27:56 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:27:56 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:27:56 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:27:56 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:27:56 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:31:31 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:31:31 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:31:31 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:31:31 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:31:31 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 02:43:29 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 02:43:29 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 02:43:29 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 02:43:29 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 02:43:29 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 03:04:11 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 03:04:11 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 03:04:11 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 03:04:11 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 03:04:11 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 03:19:51 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 03:19:51 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 03:19:51 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 03:19:51 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 03:19:51 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 03:28:54 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 03:28:54 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 03:28:54 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 03:28:55 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 03:28:55 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 20:52:34 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 20:52:34 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 20:52:34 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 20:52:34 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 20:52:34 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
+2026-09-27 20:56:17 | INFO     | bronze.bronze_loader | bronze_loader.py:448 | ================================================================
+2026-09-27 20:56:17 | INFO     | bronze.bronze_loader | bronze_loader.py:452 | Starting Bronze ETL pipeline.
+2026-09-27 20:56:17 | INFO     | bronze.bronze_loader | bronze_loader.py:456 | Source directory: E:\Portfolio\GenAI\insurance-risk-intelligence-platform\data\raw
+2026-09-27 20:56:17 | INFO     | bronze.bronze_loader | bronze_loader.py:475 | No unprocessed source files found.
+2026-09-27 20:56:17 | INFO     | bronze.bronze_loader | bronze_loader.py:479 | Bronze ETL completed. Nothing to process.
