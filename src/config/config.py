@@ -363,7 +363,7 @@ PROCESS_SOURCE_FILES = True
 
 BRONZE_WRITE_MODE = "append"
 
- # Silver persistence is a business-grain MERGE/upsert.
+# Silver persistence is a business-grain MERGE/upsert.
 # Gold currently uses full refresh because the frozen analytical dataset is static.
 SILVER_WRITE_MODE = "merge"
 
