@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 
 from config.config import (
     GOLD_SCHEMA,
@@ -37,77 +38,85 @@ def _write_jdbc(df: DataFrame, table: str) -> None:
           .save()
     )
 
-def _merge_dimension(table: str, columns: list[str], keys: list[str]) -> None:
-    non_keys = [c for c in columns if c not in keys]
-    on = " AND ".join(f"t.{k} = s.{k}" for k in keys)
-    updates = ", ".join(f"t.{c} = s.{c}" for c in non_keys)
-    cols = ", ".join(columns)
-    vals = ", ".join(f"s.{c}" for c in columns)
-    sql = f"""
-MERGE INTO {table} t
-USING (SELECT {cols} FROM {STAGE} GROUP BY {cols})
-s ON ({on})
-WHEN MATCHED THEN UPDATE SET {updates}
-WHEN NOT MATCHED THEN INSERT ({cols}) VALUES ({vals})
-"""
-    execute_sql(sql, GOLD_JDBC_PROPERTIES)
+def _clear_gold() -> None:
+    # Gold is currently a full-refresh analytical layer. The fact is cleared
+    # first so dimension foreign keys can be safely rebuilt.
+    for table in (
+        FACT_POLICY_FQN,
+        DIM_CUSTOMER_FQN,
+        DIM_POLICY_FQN,
+        DIM_PRODUCT_FQN,
+        DIM_CHANNEL_FQN,
+        DIM_TIME_FQN,
+        STAGE,
+    ):
+        execute_sql(f"TRUNCATE TABLE {table}", GOLD_JDBC_PROPERTIES)
 
-def _load_dimensions(dims) -> None:
+def _load_dimensions(dims):
     customer, policy, product, channel, time = dims
 
-    execute_sql(f"TRUNCATE TABLE {STAGE}", GOLD_JDBC_PROPERTIES)
-
-    customer_stage = customer.withColumn("CUSTOMER_KEY", F.monotonically_increasing_id())
-    policy_stage = policy.withColumn("POLICY_KEY", F.monotonically_increasing_id())
-    product_stage = product.withColumn("PRODUCT_KEY", F.monotonically_increasing_id())
-    channel_stage = channel.withColumn("CHANNEL_KEY", F.monotonically_increasing_id())
-    time_stage = time.withColumn("TIME_KEY", F.monotonically_increasing_id())
-
-    # Dimension loads use deterministic dense keys generated from sorted business keys.
-    customer_stage = customer_stage.drop("CUSTOMER_KEY").withColumn(
-        "CUSTOMER_KEY", F.row_number().over(
-            __import__("pyspark.sql.window", fromlist=["Window"]).Window.orderBy("ID_POLICY", "ID_INSURED")
-        )
+    customer_stage = customer.withColumn(
+        "CUSTOMER_KEY", F.row_number().over(Window.orderBy("ID_POLICY", "ID_INSURED"))
     )
-    policy_stage = policy_stage.drop("POLICY_KEY").withColumn(
-        "POLICY_KEY", F.row_number().over(
-            __import__("pyspark.sql.window", fromlist=["Window"]).Window.orderBy("ID_POLICY")
-        )
+    policy_stage = policy.withColumn(
+        "POLICY_KEY", F.row_number().over(Window.orderBy("ID_POLICY"))
     )
-    product_stage = product_stage.drop("PRODUCT_KEY").withColumn(
-        "PRODUCT_KEY", F.row_number().over(
-            __import__("pyspark.sql.window", fromlist=["Window"]).Window.orderBy("TYPE_PRODUCT", "REIMBURSEMENT")
-        )
+    product_stage = product.withColumn(
+        "PRODUCT_KEY", F.row_number().over(Window.orderBy("TYPE_PRODUCT", "REIMBURSEMENT"))
     )
-    channel_stage = channel_stage.drop("CHANNEL_KEY").withColumn(
-        "CHANNEL_KEY", F.row_number().over(
-            __import__("pyspark.sql.window", fromlist=["Window"]).Window.orderBy("DISTRIBUTION_CHANNEL")
-        )
+    channel_stage = channel.withColumn(
+        "CHANNEL_KEY", F.row_number().over(Window.orderBy("DISTRIBUTION_CHANNEL"))
     )
-    time_stage = time_stage.drop("TIME_KEY").withColumn(
-        "TIME_KEY", F.row_number().over(
-            __import__("pyspark.sql.window", fromlist=["Window"]).Window.orderBy("PERIOD")
-        )
+    time_stage = time.withColumn(
+        "TIME_KEY", F.row_number().over(Window.orderBy("PERIOD"))
     )
 
-    # Load dimensions from complete dimension projections.
+    audit = [
+        F.current_timestamp().alias("CREATED_TIMESTAMP"),
+        F.current_timestamp().alias("UPDATED_TIMESTAMP"),
+        F.lit("PYSPARK_ETL").alias("ETL_CREATED_BY"),
+    ]
+
+    customer_stage = customer_stage.select("*", *audit)
+    policy_stage = policy_stage.select("*", *audit)
+    product_stage = product_stage.select("*", *audit)
+    channel_stage = channel_stage.select("*", *audit)
+    time_stage = time_stage.select("*", *audit)
+
     _write_jdbc(
         customer_stage.select(
             "CUSTOMER_KEY", "ID_POLICY", "ID_INSURED",
             "DATE_EFFECT_INSURED", "DATE_LAPSE_INSURED",
-            "YEAR_EFFECT_INSURED", "YEAR_LAPSE_INSURED", "GENDER"
+            "YEAR_EFFECT_INSURED", "YEAR_LAPSE_INSURED", "GENDER",
+            "CREATED_TIMESTAMP", "UPDATED_TIMESTAMP", "ETL_CREATED_BY"
         ), DIM_CUSTOMER_FQN
     )
     _write_jdbc(
         policy_stage.select(
             "POLICY_KEY", "ID_POLICY", "TYPE_POLICY", "TYPE_POLICY_DG",
             "DATE_EFFECT_POLICY", "DATE_LAPSE_POLICY",
-            "YEAR_EFFECT_POLICY", "YEAR_LAPSE_POLICY"
+            "YEAR_EFFECT_POLICY", "YEAR_LAPSE_POLICY",
+            "CREATED_TIMESTAMP", "UPDATED_TIMESTAMP", "ETL_CREATED_BY"
         ), DIM_POLICY_FQN
     )
-    _write_jdbc(product_stage.select("PRODUCT_KEY", "TYPE_PRODUCT", "REIMBURSEMENT"), DIM_PRODUCT_FQN)
-    _write_jdbc(channel_stage.select("CHANNEL_KEY", "DISTRIBUTION_CHANNEL"), DIM_CHANNEL_FQN)
-    _write_jdbc(time_stage.select("TIME_KEY", "PERIOD"), DIM_TIME_FQN)
+    _write_jdbc(
+        product_stage.select(
+            "PRODUCT_KEY", "TYPE_PRODUCT", "REIMBURSEMENT",
+            "CREATED_TIMESTAMP", "UPDATED_TIMESTAMP", "ETL_CREATED_BY"
+        ), DIM_PRODUCT_FQN
+    )
+    _write_jdbc(
+        channel_stage.select(
+            "CHANNEL_KEY", "DISTRIBUTION_CHANNEL",
+            "CREATED_TIMESTAMP", "UPDATED_TIMESTAMP", "ETL_CREATED_BY"
+        ), DIM_CHANNEL_FQN
+    )
+    _write_jdbc(
+        time_stage.select(
+            "TIME_KEY", "PERIOD",
+            "CREATED_TIMESTAMP", "UPDATED_TIMESTAMP", "ETL_CREATED_BY"
+        ), DIM_TIME_FQN
+    )
 
     return customer_stage, policy_stage, product_stage, channel_stage, time_stage
 
@@ -123,6 +132,8 @@ def run_gold_pipeline(spark: SparkSession) -> None:
     coverage = read_table(spark, SILVER_TABLES["coverage"], SILVER_JDBC_PROPERTIES)
     financial = read_table(spark, SILVER_TABLES["financial"], SILVER_JDBC_PROPERTIES)
 
+    _clear_gold()
+
     dims = build_dimensions(customer, policy, product, channel, time)
     dim_customer, dim_policy, dim_product, dim_channel, dim_time = _load_dimensions(dims)
 
@@ -131,7 +142,6 @@ def run_gold_pipeline(spark: SparkSession) -> None:
         dim_customer, dim_policy, dim_product, dim_channel, dim_time
     )
 
-    execute_sql(f"TRUNCATE TABLE {FACT_POLICY_FQN}", GOLD_JDBC_PROPERTIES)
     _write_jdbc(fact, FACT_POLICY_FQN)
 
     logger.info("Gold ETL pipeline completed successfully. Fact rows: %d", fact.count())
