@@ -1,6 +1,6 @@
 # Validation
 
-This document records the validated Bronze -> Silver -> Gold state as executed against the local Oracle environment.
+This document records the validated Bronze -> Silver -> Gold state as executed against the local Oracle environment, together with orchestration and Airflow runtime validation.
 
 ## Bronze
 
@@ -113,3 +113,32 @@ FROZEN
 ```
 
 No additional profiling is required unless a future concrete defect is discovered.
+
+
+## Orchestration validation
+
+The repository orchestration layer was validated as the execution contract for:
+
+```text
+BRONZE -> SILVER -> GOLD
+```
+
+The orchestration implementation is intentionally thin: it calls the existing stage loaders and stops downstream execution when an upstream stage raises an exception.
+
+## Airflow runtime validation
+
+The Airflow DAG `dags/insurance_risk_intelligence_pipeline.py` was manually triggered and completed successfully.
+
+The DAG defines the same stage dependency:
+
+```text
+bronze >> silver >> gold
+```
+
+It is configured with:
+
+- `catchup=False`
+- `max_active_runs=1`
+- `schedule=None` (manual/unscheduled by design)
+
+This successful manual run is the current runtime validation evidence for the Airflow orchestration layer. No production schedule is claimed or introduced by this validation.
