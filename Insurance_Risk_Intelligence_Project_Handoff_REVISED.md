@@ -1,8 +1,8 @@
 # Insurance Risk Intelligence Platform — Project Handoff
 
-**Status:** Frozen post-Gold validation state  
+**Status:** Frozen post-Gold + Airflow validation state  
 **Repository:** SinghSaurabh2411/insurance-risk-intelligence-platform  
-**Validated through:** Bronze → Silver → Gold  
+**Validated through:** Bronze → Silver → Gold → Airflow orchestration  
 **Latest implementation baseline:** f07ac0ef74e8bcf4be27847ad8b314ba58c5da72
 
 ## Authority rules
@@ -234,7 +234,7 @@ ORCHESTRATION
   implemented / stage sequencing and fail-fast behavior
 
 AIRFLOW DAG
-  implemented / runtime not yet validated
+  implemented / manual runtime execution validated
 
 FASTAPI
   planned / not implemented
@@ -246,7 +246,7 @@ RAG / VECTOR DB / LLM
   planned / not implemented
 ```
 
-## Orchestration — implemented, runtime validation pending
+## Orchestration — implemented and runtime validated
 
 The repository now contains a thin orchestration layer that sequences the frozen stages without moving layer-specific transformation or persistence logic:
 
@@ -266,16 +266,15 @@ The normal `src.main` entry point now delegates to the orchestration layer.
 
 The Airflow DAG is configured as `bronze >> silver >> gold`, with `catchup=False` and `max_active_runs=1`. It intentionally has no production schedule yet.
 
-Airflow runtime execution has **not** been validated in the current environment. Therefore the DAG is implemented code, not execution evidence.
+Airflow runtime execution has been **manually triggered and completed successfully**. This is current execution evidence for the Airflow orchestration layer.
 
 ## Next sequence
 
-The next work is operational validation of orchestration, followed by:
+The next work is:
 
 ```text
-1. Airflow/runtime validation
-2. API / analytics interfaces
-3. GenAI / RAG capabilities
+1. API / analytics interfaces
+2. GenAI / RAG capabilities
 ```
 
 Do not recreate or re-profile frozen Bronze, Silver, or Gold unless a concrete implementation defect is found.
@@ -288,4 +287,5 @@ Do not recreate or re-profile frozen Bronze, Silver, or Gold unless a concrete i
 - Gold remains five dimensions + FACT_POLICY + technical stage + full refresh.
 - No FACT_CLAIMS.
 - No SCD2 in current Silver or Gold implementation.
+- Airflow is an orchestration layer, currently validated by a successful manual run and intentionally unscheduled.
 - No credentials in Git.
