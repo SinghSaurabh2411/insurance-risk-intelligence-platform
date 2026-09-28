@@ -15,8 +15,8 @@ SOURCE CSV -> BRONZE -> SILVER -> GOLD
 | Bronze | Implemented, execution validated, frozen |
 | Silver | Implemented, DQ/reconciliation/rerun validated, frozen |
 | Gold | Implemented, DQ/reconciliation/FK validation completed, frozen |
-| Orchestration | Implemented, runtime validation pending |
-| Airflow DAG | Implemented, runtime validation pending |
+| Orchestration | Implemented, stage sequencing and fail-fast behavior validated |
+| Airflow DAG | Implemented, manual runtime execution validated |
 | FastAPI | Planned |
 | Streamlit | Planned |
 | GenAI / RAG / LLM | Planned |
@@ -110,15 +110,13 @@ BRONZE -> SILVER -> GOLD
 
 The application entry point delegates to the orchestrator. Stage failures stop downstream execution. The Airflow DAG is intentionally unscheduled (`schedule=None`) until an operational schedule is explicitly defined.
 
-Airflow runtime execution is not yet validated.
+Airflow runtime execution has been manually triggered and completed successfully. The DAG remains intentionally unscheduled (`schedule=None`).
 
 ## Next phase
 
 The data-engineering foundation and orchestration implementation are complete. Next:
 
 ```text
-Airflow/runtime validation
-    ->
 API / analytics interfaces
     ->
 GenAI / RAG capabilities
