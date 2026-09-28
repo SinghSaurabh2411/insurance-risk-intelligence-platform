@@ -61,3 +61,16 @@ Current Gold dimensions are static/Type 1 and loaded by full refresh. SCD2 is in
 ## Technical staging
 
 `DWH_GOLD.GOLD_STAGE` is implementation staging only and is not a business Gold object.
+
+
+## Orchestration and Airflow
+
+The repository contains a thin orchestration layer in `src/orchestration/pipeline.py` and an Airflow DAG in `dags/insurance_risk_intelligence_pipeline.py`.
+
+The execution contract is:
+
+```text
+BRONZE -> SILVER -> GOLD
+```
+
+The Airflow DAG is configured with `bronze >> silver >> gold`, `catchup=False`, `max_active_runs=1`, and `schedule=None`. It was manually triggered and completed successfully. Airflow does not duplicate layer-specific ETL logic; it invokes the existing Bronze, Silver, and Gold loaders.
