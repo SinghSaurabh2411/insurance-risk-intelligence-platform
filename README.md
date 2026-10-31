@@ -17,7 +17,7 @@ SOURCE CSV -> BRONZE -> SILVER -> GOLD
 | Gold | Implemented, DQ/reconciliation/FK validation completed, frozen |
 | Orchestration | Implemented, stage sequencing and fail-fast behavior validated |
 | Airflow DAG | Implemented, manual runtime execution validated |
-| FastAPI | Planned |
+| FastAPI | Implemented; closure security and automated tests added on the API review branch |
 | Streamlit | Planned |
 | GenAI / RAG / LLM | Planned |
 
@@ -112,12 +112,50 @@ The application entry point delegates to the orchestrator. Stage failures stop d
 
 Airflow runtime execution has been manually triggered and completed successfully. The DAG remains intentionally unscheduled (`schedule=None`).
 
+## FastAPI
+
+The read-only API exposes seven Gold-layer analytics routes plus two health routes:
+
+| Route | Purpose |
+|---|---|
+| `GET /dashboard/summary` | Portfolio summary KPIs |
+| `GET /dashboard/yearly` | Yearly portfolio metrics |
+| `GET /dashboard/products` | Product and reimbursement breakdown |
+| `GET /dashboard/channels` | Distribution-channel breakdown |
+| `GET /dashboard/policies` | Policy-type breakdown |
+| `GET /dashboard/customers` | Insured gender breakdown |
+| `GET /dashboard/customer-cohorts` | Insured effective-year cohorts |
+| `GET /health` | Public API liveness |
+| `GET /health/db` | Protected Oracle connectivity check |
+
+Dashboard routes and `/health/db` require the `X-API-Key` request header. Configure the server-side `API_ACCESS_KEY`; the API fails closed if it is missing. Do not place this secret in browser-side code or commit it to Git.
+
+Optional CORS configuration uses `API_CORS_ORIGINS`, a comma-separated list of exact allowed origins. It defaults to an empty allowlist; wildcard origins are rejected.
+
+Run locally from the repository root:
+
+```powershell
+$env:PYTHONPATH="$PWD\\src"
+$env:API_ACCESS_KEY="replace-with-a-long-random-secret"
+$env:API_CORS_ORIGINS="http://localhost:8501"
+uvicorn api.main:app --reload
+```
+
+Install dependencies with `pip install -r requirements.txt`. Run API tests with:
+
+```powershell
+$env:PYTHONPATH="$PWD\\src"
+pytest -q tests
+```
+
+Tests use mocked Oracle connections and do not replace live Oracle/Gold reconciliation.
+
 ## Next phase
 
-The data-engineering foundation and orchestration implementation are complete. Next:
+The data-engineering foundation and orchestration implementation are complete. The API analytics surface is implemented. Next:
 
 ```text
-API / analytics interfaces
+Streamlit dashboard
     ->
 GenAI / RAG capabilities
 ```
