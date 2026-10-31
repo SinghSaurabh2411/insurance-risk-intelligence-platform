@@ -1,0 +1,9 @@
+# Existing ETL dependencies
+pyspark==3.5.4
+oracledb==3.4.2
+python-dotenv==1.2.2
+concurrent-log-handler==0.9.29
+
+# API dependencies
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
