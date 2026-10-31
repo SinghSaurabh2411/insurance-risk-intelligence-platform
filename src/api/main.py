@@ -11,6 +11,11 @@ from fastapi import FastAPI, HTTPException
 from api.database import get_api_connection
 from utils.logger import get_logger
 from api.routers.dashboard import router as dashboard_router
+from api.routers.yearly import router as yearly_router
+from api.routers.products import router as products_router
+from api.routers.channels import router as channels_router
+from api.routers.policies import router as policies_router
+from api.routers.customers import router as customers_router
 
 
 logger = get_logger(
@@ -27,6 +32,11 @@ app = FastAPI(
 
 
 app.include_router(dashboard_router)
+app.include_router(yearly_router)
+app.include_router(products_router)
+app.include_router(channels_router)
+app.include_router(policies_router)
+app.include_router(customers_router)
 
 
 @app.get("/health", tags=["Health"])
