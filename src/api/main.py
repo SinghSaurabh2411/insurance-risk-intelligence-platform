@@ -6,7 +6,11 @@ Purpose : API entry point and application health endpoints.
 ===============================================================================
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from api.models import HealthResponse, DatabaseHealthResponse
+from api.security import get_cors_origins, require_api_key
 
 from api.database import get_api_connection
 from utils.logger import get_logger
@@ -30,6 +34,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
+cors_origins = get_cors_origins()
+if cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=False,
+        allow_methods=["GET"],
+        allow_headers=["X-API-Key", "Content-Type"],
+    )
+
 
 app.include_router(dashboard_router)
 app.include_router(yearly_router)
@@ -39,7 +53,7 @@ app.include_router(policies_router)
 app.include_router(customers_router)
 
 
-@app.get("/health", tags=["Health"])
+@app.get("/health", tags=["Health"], response_model=HealthResponse)
 def health_check():
     """
     Check whether the API application is running.
@@ -50,7 +64,7 @@ def health_check():
     }
 
 
-@app.get("/health/db", tags=["Health"])
+@app.get("/health/db", tags=["Health"], response_model=DatabaseHealthResponse, dependencies=[Depends(require_api_key)])
 def database_health_check():
     """
     Verify connectivity to Oracle using the dedicated DWH_API account.
