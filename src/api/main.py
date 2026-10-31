@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 
 from api.database import get_api_connection
 from utils.logger import get_logger
+from api.routers.dashboard import router as dashboard_router
 
 
 logger = get_logger(
@@ -23,6 +24,9 @@ app = FastAPI(
     description="Read-only analytical API for the Insurance Risk Intelligence Platform.",
     version="1.0.0",
 )
+
+
+app.include_router(dashboard_router)
 
 
 @app.get("/health", tags=["Health"])
