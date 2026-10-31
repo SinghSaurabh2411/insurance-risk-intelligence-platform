@@ -324,3 +324,65 @@ def get_dashboard_policies():
     finally:
         if connection is not None:
             connection.close()
+
+
+CUSTOMER_SQL = """
+SELECT
+    C.GENDER,
+    COUNT(*) AS TOTAL_OBSERVATIONS,
+    COUNT(DISTINCT F.CUSTOMER_KEY) AS TOTAL_CUSTOMER_RECORDS,
+    COUNT(DISTINCT F.ID_POLICY) AS TOTAL_POLICIES,
+    NVL(SUM(F.PREMIUM), 0) AS TOTAL_PREMIUM,
+    NVL(SUM(F.COST_CLAIMS_YEAR), 0) AS TOTAL_CLAIMS_COST,
+    NVL(AVG(F.PREMIUM), 0) AS AVERAGE_PREMIUM,
+    NVL(SUM(F.EXPOSURE_TIME), 0) AS TOTAL_EXPOSURE
+FROM DWH_GOLD.FACT_POLICY F
+INNER JOIN DWH_GOLD.DIM_CUSTOMER C
+    ON F.CUSTOMER_KEY = C.CUSTOMER_KEY
+GROUP BY C.GENDER
+ORDER BY C.GENDER
+"""
+
+
+@router.get("/customers")
+def get_dashboard_customers():
+    """
+    Return portfolio KPIs grouped by insured gender.
+    """
+
+    connection = None
+
+    try:
+        connection = get_api_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute(CUSTOMER_SQL)
+            rows = cursor.fetchall()
+
+        customers = [
+            {
+                "gender": row[0],
+                "total_observations": int(row[1]),
+                "total_customer_records": int(row[2]),
+                "total_policies": int(row[3]),
+                "total_premium": float(row[4]),
+                "total_claims_cost": float(row[5]),
+                "average_premium": float(row[6]),
+                "total_exposure": float(row[7]),
+            }
+            for row in rows
+        ]
+
+        return {"customers": customers}
+
+    except Exception as exc:
+        logger.exception("Dashboard customer breakdown query failed.")
+
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to retrieve customer dashboard metrics.",
+        ) from exc
+
+    finally:
+        if connection is not None:
+            connection.close()
