@@ -6,7 +6,10 @@ Purpose : Expose read-only analytical summary KPIs from the Gold layer.
 ===============================================================================
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.security import require_api_key
+from api.models import DashboardSummaryResponse
 
 from api.database import get_api_connection
 from utils.logger import get_logger
@@ -15,6 +18,7 @@ from utils.logger import get_logger
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"],
+    dependencies=[Depends(require_api_key)],
 )
 
 logger = get_logger(
@@ -35,7 +39,7 @@ FROM DWH_GOLD.FACT_POLICY F
 """
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=DashboardSummaryResponse)
 def get_dashboard_summary():
     """
     Return high-level insurance portfolio KPIs from Gold FACT_POLICY.
