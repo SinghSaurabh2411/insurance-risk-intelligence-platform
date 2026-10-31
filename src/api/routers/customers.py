@@ -6,7 +6,10 @@ Purpose : Expose customer-level portfolio breakdowns.
 ===============================================================================
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.security import require_api_key
+from api.models import CustomersResponse, CustomerCohortsResponse
 
 from api.database import get_api_connection
 from utils.logger import get_logger
@@ -15,6 +18,7 @@ from utils.logger import get_logger
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"],
+    dependencies=[Depends(require_api_key)],
 )
 
 logger = get_logger(
@@ -59,7 +63,7 @@ ORDER BY C.YEAR_EFFECT_INSURED NULLS LAST
 """
 
 
-@router.get("/customers")
+@router.get("/customers", response_model=CustomersResponse)
 def get_dashboard_customers():
     """
     Return portfolio KPIs grouped by insured gender.
@@ -103,7 +107,7 @@ def get_dashboard_customers():
             connection.close()
 
 
-@router.get("/customer-cohorts")
+@router.get("/customer-cohorts", response_model=CustomerCohortsResponse)
 def get_dashboard_customer_cohorts():
     """
     Return portfolio KPIs grouped by insured coverage effective year.
