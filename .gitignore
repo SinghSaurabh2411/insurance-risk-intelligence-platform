@@ -13,3 +13,6 @@ __pycache__/
 
 # JDBC drivers
 drivers/*.jar
+
+# Streamlit local secrets
+.streamlit/secrets.toml
