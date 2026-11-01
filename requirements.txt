@@ -7,3 +7,7 @@ concurrent-log-handler==0.9.29
 # API dependencies
 fastapi==0.162.0
 uvicorn[standard]==0.54.0
+
+# API test dependencies
+pytest==8.4.2
+httpx==0.28.1

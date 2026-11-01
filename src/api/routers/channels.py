@@ -6,7 +6,10 @@ Purpose : Expose distribution-channel portfolio breakdowns.
 ===============================================================================
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.security import require_api_key
+from api.models import ChannelsResponse
 
 from api.database import get_api_connection
 from utils.logger import get_logger
@@ -15,6 +18,7 @@ from utils.logger import get_logger
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"],
+    dependencies=[Depends(require_api_key)],
 )
 
 logger = get_logger(
@@ -40,7 +44,7 @@ ORDER BY C.DISTRIBUTION_CHANNEL
 """
 
 
-@router.get("/channels")
+@router.get("/channels", response_model=ChannelsResponse)
 def get_dashboard_channels():
     """
     Return portfolio KPIs grouped by distribution channel.

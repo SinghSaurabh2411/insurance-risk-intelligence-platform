@@ -6,7 +6,10 @@ Purpose : Expose yearly portfolio KPIs.
 ===============================================================================
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.security import require_api_key
+from api.models import YearlyResponse
 
 from api.database import get_api_connection
 from utils.logger import get_logger
@@ -15,6 +18,7 @@ from utils.logger import get_logger
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"],
+    dependencies=[Depends(require_api_key)],
 )
 
 logger = get_logger(
@@ -40,7 +44,7 @@ ORDER BY T.PERIOD
 """
 
 
-@router.get("/yearly")
+@router.get("/yearly", response_model=YearlyResponse)
 def get_dashboard_yearly():
     """
     Return yearly insurance portfolio KPIs from Gold FACT_POLICY.
