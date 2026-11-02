@@ -374,18 +374,65 @@ def render_customer_page() -> None:
     })
 
 
+def render_cohort_line_chart(
+    data: pd.DataFrame,
+    value: str,
+    title: str,
+    color: str,
+    value_title: str,
+    *,
+    height: int = 330,
+) -> None:
+    """Render a clean interactive cohort trend without crowded permanent labels."""
+    chart = (
+        alt.Chart(data)
+        .mark_line(
+            color=color,
+            strokeWidth=2.5,
+            point=alt.OverlayMarkDef(filled=True, size=58, color=color),
+        )
+        .encode(
+            x=alt.X(
+                "cohort_year:Q",
+                title="Year insured became effective",
+                scale=alt.Scale(zero=False),
+                axis=alt.Axis(
+                    format="d",
+                    tickCount=8,
+                    labelFontWeight="bold",
+                    titleFontWeight="bold",
+                    labelAngle=0,
+                ),
+            ),
+            y=alt.Y(
+                f"{value}:Q",
+                title=value_title,
+                axis=alt.Axis(labelFontWeight="bold", titleFontWeight="bold"),
+            ),
+            tooltip=[
+                alt.Tooltip("cohort_year:Q", title="Effective year", format="d"),
+                alt.Tooltip(f"{value}:Q", title=value_title, format=",.2f"),
+            ],
+        )
+        .properties(height=height, title=title)
+        .configure_view(strokeOpacity=0)
+    )
+    st.altair_chart(chart, use_container_width=True)
+
+
 def render_cohort_page() -> None:
     records = load_endpoint("customer_cohorts").get("customer_cohorts", [])
     st.subheader("🧑‍🤝‍🧑 Customer cohort analysis")
     if not records:
         st.info("No customer cohort data is currently available.")
         return
+
     frame = pd.DataFrame(records)
-    frame["cohort_year"] = frame["year_effect_insured"].apply(
-        lambda value: str(int(value)) if pd.notna(value) else "Not available"
+    frame["cohort_year"] = pd.to_numeric(
+        frame["year_effect_insured"], errors="coerce"
     )
     render_metric_row([
-        ("Cohorts", f"{len(frame):,}", "Number of insured-effective-year groups returned by the API."),
+        ("Cohorts", f"{frame['cohort_year'].nunique(dropna=True):,}", "Number of distinct insured-effective-year groups returned by the API. Records without an effective year are retained in the detailed table."),
         ("Customer records", f"{int(frame['total_customer_records'].sum()):,}", METRIC_HELP["Customer records"]),
         ("Total observations", f"{int(frame['total_observations'].sum()):,}", METRIC_HELP["Total observations"]),
         ("Total premium", format_currency_millions(float(frame["total_premium"].sum())), METRIC_HELP["Total premium"]),
@@ -394,15 +441,74 @@ def render_cohort_page() -> None:
         "Cohort definition",
         "A cohort groups customer records by YEAR_EFFECT_INSURED, the year insurance became effective for the insured. This is not necessarily the same as the reporting period in the overview.",
     )
-    a, b = st.columns(2)
-    with a:
-        st.markdown("**Customer records by effective year**")
-        render_bar_chart(frame, "cohort_year", "total_customer_records", "Effective year", COLORS["purple"], "Customer records")
-    with b:
-        st.markdown("**Premium by effective year**")
-        premium = frame.assign(premium_m=frame["total_premium"] / 1_000_000)
-        render_bar_chart(premium, "cohort_year", "premium_m", "Effective year", COLORS["blue"], "₹ millions")
-    metric_table(frame.drop(columns=["cohort_year"]), {
+
+    chart_data = frame.dropna(subset=["cohort_year"]).copy()
+    if chart_data.empty:
+        st.info("No valid insured-effective years are available for charting.")
+    else:
+        chart_data["cohort_year"] = chart_data["cohort_year"].astype(int)
+        min_year = int(chart_data["cohort_year"].min())
+        max_year = int(chart_data["cohort_year"].max())
+
+        # Start with a recent 30-year window when possible; the slider can reveal
+        # the complete historical range without crowding the initial view.
+        default_min = max(min_year, max_year - 29)
+        if min_year < max_year:
+            selected_range = st.slider(
+                "Filter cohort year range",
+                min_value=min_year,
+                max_value=max_year,
+                value=(default_min, max_year),
+                step=1,
+                help="Adjust the range to explore earlier or later insured-effective-year cohorts.",
+                key="cohort_year_range",
+            )
+            filtered = chart_data[
+                chart_data["cohort_year"].between(
+                    selected_range[0], selected_range[1]
+                )
+            ].sort_values("cohort_year")
+            st.caption(
+                f"Showing cohorts from {selected_range[0]} to {selected_range[1]} "
+                f"({len(filtered):,} yearly cohorts). The detailed table below retains the full dataset."
+            )
+        else:
+            filtered = chart_data.sort_values("cohort_year")
+            st.caption(f"Showing the available cohort year: {min_year}.")
+
+        premium = filtered.assign(
+            premium_m=filtered["total_premium"] / 1_000_000
+        )
+        a, b = st.columns(2)
+        with a:
+            st.markdown("**Customer records by effective year**")
+            render_cohort_line_chart(
+                filtered,
+                "total_customer_records",
+                "Customer records by effective year",
+                COLORS["purple"],
+                "Customer records",
+            )
+        with b:
+            st.markdown("**Premium by effective year**")
+            render_cohort_line_chart(
+                premium,
+                "premium_m",
+                "Premium by effective year",
+                COLORS["blue"],
+                "Premium (₹ millions)",
+            )
+
+    st.divider()
+    info_heading(
+        "Complete cohort data",
+        "This table includes every cohort year returned by the API, including years outside the selected chart range and records with no effective year.",
+    )
+    table_frame = frame.copy()
+    table_frame["year_effect_insured"] = table_frame["year_effect_insured"].apply(
+        lambda value: int(value) if pd.notna(value) else "Not available"
+    )
+    metric_table(table_frame.drop(columns=["cohort_year"]), {
         "year_effect_insured": "Year insured became effective",
         "total_observations": "Total observations",
         "total_customer_records": "Customer records",
