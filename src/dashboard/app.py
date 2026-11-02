@@ -20,8 +20,38 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# A restrained visual refresh: colorful KPI accents, softer surfaces, and
-# distinct chart colors while retaining Streamlit's native responsive layout.
+COLORS = {
+    "blue": "#3977D5",
+    "orange": "#E58B36",
+    "teal": "#16A085",
+    "purple": "#8E63CE",
+    "pink": "#DF5D78",
+}
+METRIC_HELP = {
+    "Total policies": (
+        "Number of distinct insurance policy IDs represented in the data. "
+        "A policy appearing in multiple periods is counted once in an overall total."
+    ),
+    "Total observations": (
+        "Number of policy-insured-period records in the Gold FACT_POLICY table. "
+        "A policy can contribute multiple observations across periods or insured members."
+    ),
+    "Total premium": "Sum of premium amounts across the selected records.",
+    "Total claims cost": "Sum of the recorded yearly claims-cost amounts across the selected records.",
+    "Average premium": "Arithmetic average of premium per policy-insured-period observation; it is not the average per unique policy.",
+    "Total exposure": "Sum of exposure time across the selected records. Interpret this using the source dataset's exposure-time unit.",
+    "Customer records": "Distinct customer dimension records represented in the selected observations.",
+    "Period covered": "The earliest and latest reporting years available in the returned yearly dataset.",
+}
+PAGE_DESCRIPTIONS = {
+    "Portfolio overview": "A high-level view of the insurance portfolio and its yearly movement.",
+    "Product analysis": "Compares portfolio performance across product type and reimbursement category.",
+    "Channel analysis": "Shows how premium, claims cost, and portfolio volume are distributed across sales channels.",
+    "Policy analysis": "Compares portfolio performance across policy type and policy DG classification.",
+    "Customer analysis": "Breaks down the portfolio by the gender attribute available in the customer dimension.",
+    "Customer cohort analysis": "Compares insured customer records by the year their insurance became effective.",
+}
+
 st.markdown(
     """
     <style>
@@ -29,18 +59,29 @@ st.markdown(
         background: linear-gradient(145deg, #ffffff 0%, #f5f8ff 100%);
         border: 1px solid #e5eaf4;
         border-left: 5px solid #3977d5;
-        padding: 15px 16px;
+        padding: 14px 15px;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(25, 45, 80, 0.06);
     }
-    [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stMetric"] { border-left-color: #16a085; }
-    [data-testid="stHorizontalBlock"] > div:nth-child(3) [data-testid="stMetric"] { border-left-color: #8e63ce; }
-    [data-testid="stHorizontalBlock"] > div:nth-child(4) [data-testid="stMetric"] { border-left-color: #e58b36; }
-    [data-testid="stHorizontalBlock"] > div:nth-child(5) [data-testid="stMetric"] { border-left-color: #df5d78; }
-    [data-testid="stHorizontalBlock"] > div:nth-child(6) [data-testid="stMetric"] { border-left-color: #269bb5; }
     [data-testid="stMetricLabel"] { color: #52627a; font-weight: 600; }
     [data-testid="stMetricValue"] { color: #172b4d; }
     h1 { color: #17365f; }
+    .definition-icon {
+        display: inline-block;
+        margin-left: 4px;
+        color: #3977d5;
+        border: 1px solid #9bb8e8;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        line-height: 15px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: help;
+        vertical-align: middle;
+    }
+    .page-intro { color: #64748b; margin-top: -8px; margin-bottom: 18px; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -48,101 +89,329 @@ st.markdown(
 
 
 @st.cache_data(ttl=300, show_spinner=False)
-def load_overview_data() -> tuple[dict, dict]:
-    """Fetch portfolio summary and yearly metrics through the existing API."""
+def load_endpoint(endpoint_name: str) -> dict:
+    """Fetch one analytics resource through the authenticated API client."""
     client = DashboardAPIClient()
-    return client.get_summary(), client.get_yearly()
+    methods = {
+        "summary": client.get_summary,
+        "yearly": client.get_yearly,
+        "products": client.get_products,
+        "channels": client.get_channels,
+        "policies": client.get_policies,
+        "customers": client.get_customers,
+        "customer_cohorts": client.get_customer_cohorts,
+    }
+    return methods[endpoint_name]()
 
 
 def format_currency_millions(value: float) -> str:
-    """Format a currency amount as Indian rupees in millions."""
     return f"₹{value / 1_000_000:,.2f}M"
 
 
-def render_kpis(summary: dict) -> None:
-    """Render the six portfolio-level KPI cards."""
-    metrics = [
-        ("Total policies", f"{summary['total_policies']:,}"),
-        ("Total observations", f"{summary['total_observations']:,}"),
-        ("Total premium", format_currency_millions(summary["total_premium"])),
-        ("Total claims cost", format_currency_millions(summary["total_claims_cost"])),
-        ("Average premium", f"₹{summary['average_premium']:,.2f}"),
-        ("Total exposure", f"{summary['total_exposure']:,.2f}"),
-    ]
-
-    columns = st.columns(6)
-    for column, (label, value) in zip(columns, metrics):
-        column.metric(label=label, value=value)
+def info_heading(label: str, definition: str) -> None:
+    """Show a compact heading with a hover-only definition icon."""
+    st.markdown(
+        f'<div style="font-size:1rem;font-weight:650;margin:0 0 8px 0;">'
+        f'{label}<span class="definition-icon" title="{definition}">i</span></div>',
+        unsafe_allow_html=True,
+    )
 
 
-def render_yearly_trends(yearly: dict) -> None:
-    """Render yearly premium, claims-cost, and exposure trends."""
-    years = yearly.get("years", [])
-    if not years:
+def render_metric_row(metrics: list[tuple[str, str, str]]) -> None:
+    """Render KPI cards with Streamlit's built-in hover help icons."""
+    columns = st.columns(len(metrics))
+    for column, (label, value, help_text) in zip(columns, metrics):
+        column.metric(label=label, value=value, help=help_text)
+
+
+def render_bar_chart(
+    data: pd.DataFrame,
+    category: str,
+    value: str,
+    title: str,
+    color: str,
+    value_title: str,
+    *,
+    horizontal: bool = False,
+    height: int = 330,
+) -> None:
+    """Render a labelled bar chart with readable axes and exact-value tooltips."""
+    chart_data = data.copy()
+    chart_data[category] = chart_data[category].fillna("Not available").astype(str)
+    chart_data[value] = pd.to_numeric(chart_data[value], errors="coerce").fillna(0)
+    if chart_data.empty:
+        st.info("No data is available for this chart.")
+        return
+
+    if horizontal:
+        bars = alt.Chart(chart_data).mark_bar(color=color, cornerRadiusEnd=4).encode(
+            y=alt.Y(
+                f"{category}:N",
+                sort="-x",
+                title=None,
+                axis=alt.Axis(labelFontWeight="bold", labelLimit=220),
+            ),
+            x=alt.X(
+                f"{value}:Q",
+                title=value_title,
+                axis=alt.Axis(labelFontWeight="bold", titleFontWeight="bold"),
+            ),
+            tooltip=[
+                alt.Tooltip(f"{category}:N", title=title),
+                alt.Tooltip(f"{value}:Q", title=value_title, format=",.2f"),
+            ],
+        )
+        labels = alt.Chart(chart_data).mark_text(
+            align="left", baseline="middle", dx=5, fontWeight="bold", color="#34445B"
+        ).encode(
+            y=alt.Y(f"{category}:N", sort="-x"),
+            x=alt.X(f"{value}:Q"),
+            text=alt.Text(f"{value}:Q", format=",.2f"),
+        )
+        chart = (bars + labels).properties(height=height)
+    else:
+        bars = alt.Chart(chart_data).mark_bar(
+            color=color, cornerRadiusTopLeft=4, cornerRadiusTopRight=4
+        ).encode(
+            x=alt.X(
+                f"{category}:N",
+                sort=None,
+                title=None,
+                axis=alt.Axis(labelFontWeight="bold", labelAngle=-25, labelLimit=150),
+            ),
+            y=alt.Y(
+                f"{value}:Q",
+                title=value_title,
+                axis=alt.Axis(labelFontWeight="bold", titleFontWeight="bold"),
+            ),
+            tooltip=[
+                alt.Tooltip(f"{category}:N", title=title),
+                alt.Tooltip(f"{value}:Q", title=value_title, format=",.2f"),
+            ],
+        )
+        labels = alt.Chart(chart_data).mark_text(
+            dy=-8, fontWeight="bold", color="#34445B"
+        ).encode(
+            x=alt.X(f"{category}:N", sort=None),
+            y=alt.Y(f"{value}:Q"),
+            text=alt.Text(f"{value}:Q", format=",.2f"),
+        )
+        chart = (bars + labels).properties(height=height)
+    st.altair_chart(chart.configure_view(strokeOpacity=0), use_container_width=True)
+
+
+def metric_table(frame: pd.DataFrame, rename: dict[str, str]) -> None:
+    """Show a consistently formatted detail table."""
+    display = frame.rename(columns=rename).copy()
+    for column in ("Total premium", "Total claims cost", "Average premium"):
+        if column in display:
+            display[column] = display[column].map(lambda value: f"₹{value:,.2f}")
+    if "Total exposure" in display:
+        display["Total exposure"] = display["Total exposure"].map(lambda value: f"{value:,.2f}")
+    for column in ("Total observations", "Total policies", "Customer records"):
+        if column in display:
+            display[column] = display[column].map(lambda value: f"{value:,}")
+    st.dataframe(display, use_container_width=True, hide_index=True)
+
+
+def render_overview() -> None:
+    summary = load_endpoint("summary")
+    yearly = load_endpoint("yearly").get("years", [])
+    years = pd.DataFrame(yearly).sort_values("period") if yearly else pd.DataFrame()
+
+    st.subheader("📌 Portfolio overview")
+    if not years.empty:
+        period = f"{int(years['period'].min())}–{int(years['period'].max())}"
+    else:
+        period = "Not available"
+    render_metric_row([
+        ("Total policies", f"{summary['total_policies']:,}", METRIC_HELP["Total policies"]),
+        ("Total observations", f"{summary['total_observations']:,}", METRIC_HELP["Total observations"]),
+        ("Total premium", format_currency_millions(summary["total_premium"]), METRIC_HELP["Total premium"]),
+        ("Total claims cost", format_currency_millions(summary["total_claims_cost"]), METRIC_HELP["Total claims cost"]),
+        ("Average premium", f"₹{summary['average_premium']:,.2f}", METRIC_HELP["Average premium"]),
+        ("Total exposure", f"{summary['total_exposure']:,.2f}", METRIC_HELP["Total exposure"]),
+    ])
+    info_heading("🗓️ Reporting period", METRIC_HELP["Period covered"])
+    st.markdown(f"**{period}**")
+
+    if years.empty:
         st.info("No yearly performance data is currently available.")
         return
 
-    frame = pd.DataFrame(years).sort_values("period").copy()
-    # Sort using the numeric year, then display it as a categorical label.
-    # This prevents Streamlit from inventing continuous ticks such as 2017.5.
+    frame = years.copy()
     frame["period"] = frame["period"].astype(int).astype(str)
     frame["premium_m"] = frame["total_premium"] / 1_000_000
     frame["claims_cost_m"] = frame["total_claims_cost"] / 1_000_000
 
-    def render_column_chart(
-        metric: str,
-        y_title: str,
-        color: str,
-        tooltip_title: str,
-    ) -> None:
-        """Render a categorical yearly column chart with bold axis typography."""
-        chart = (
-            alt.Chart(frame)
-            .mark_bar(color=color, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-            .encode(
-                x=alt.X(
-                    "period:N",
-                    title="Year",
-                    sort=alt.SortField(field="period", order="ascending"),
-                    axis=alt.Axis(
-                        labelFontWeight="bold",
-                        titleFontWeight="bold",
-                        labelColor="#34445B",
-                        titleColor="#24364D",
-                    ),
-                ),
-                y=alt.Y(
-                    f"{metric}:Q",
-                    title=y_title,
-                    axis=alt.Axis(
-                        labelFontWeight="bold",
-                        titleFontWeight="bold",
-                        labelColor="#34445B",
-                        titleColor="#24364D",
-                    ),
-                ),
-                tooltip=[
-                    alt.Tooltip("period:N", title="Year"),
-                    alt.Tooltip(f"{metric}:Q", title=tooltip_title, format=",.2f"),
-                ],
-            )
-            .properties(height=300)
-            .configure_view(strokeOpacity=0)
-        )
-        st.altair_chart(chart, use_container_width=True)
+    st.divider()
+    st.subheader("📈 Yearly performance trends")
+    info_heading(
+        "How to read these charts",
+        "Each bar represents one reporting year. Labels above bars show the metric value; hover over a bar for the exact value.",
+    )
+    a, b, c = st.columns(3)
+    with a:
+        st.markdown("**💰 Premium**")
+        render_bar_chart(frame, "period", "premium_m", "Year", COLORS["blue"], "₹ millions", height=290)
+    with b:
+        st.markdown("**🧾 Claims cost**")
+        render_bar_chart(frame, "period", "claims_cost_m", "Year", COLORS["orange"], "₹ millions", height=290)
+    with c:
+        st.markdown("**🛡️ Exposure**")
+        render_bar_chart(frame, "period", "total_exposure", "Year", COLORS["teal"], "Exposure", height=290)
 
-    premium_col, claims_col, exposure_col = st.columns(3)
-    with premium_col:
-        st.subheader("💰 Premium")
-        render_column_chart("premium_m", "₹ millions", "#3977D5", "Premium (₹M)")
-    with claims_col:
-        st.subheader("🧾 Claims cost")
-        render_column_chart(
-            "claims_cost_m", "₹ millions", "#E58B36", "Claims cost (₹M)"
-        )
-    with exposure_col:
-        st.subheader("🛡️ Exposure")
-        render_column_chart("total_exposure", "Exposure", "#16A085", "Exposure")
+
+def render_breakdown_page(
+    *,
+    endpoint: str,
+    response_key: str,
+    title: str,
+    category_fields: list[str],
+    category_labels: dict[str, str],
+    chart_category: str,
+    chart_title: str,
+    chart_metric: str = "total_premium",
+) -> None:
+    records = load_endpoint(endpoint).get(response_key, [])
+    st.subheader(title)
+    if not records:
+        st.info("No records are currently available for this analysis.")
+        return
+    frame = pd.DataFrame(records)
+    for field in category_fields:
+        frame[field] = frame[field].fillna("Not available").astype(str)
+    frame["category_label"] = frame[category_fields].agg(" | ".join, axis=1)
+
+    # Distinct policy/customer counts across categories are not additive.
+    # Therefore the page shows additive measures and category count only.
+    total_observations = int(frame["total_observations"].sum())
+    total_premium = float(frame["total_premium"].sum())
+    total_claims = float(frame["total_claims_cost"].sum())
+    render_metric_row([
+        ("Categories", f"{len(frame):,}", "Number of groups returned by this analysis."),
+        ("Total observations", f"{total_observations:,}", METRIC_HELP["Total observations"]),
+        ("Total premium", format_currency_millions(total_premium), METRIC_HELP["Total premium"]),
+        ("Total claims cost", format_currency_millions(total_claims), METRIC_HELP["Total claims cost"]),
+    ])
+
+    metric_options = {
+        "Premium": ("total_premium", "Premium (₹ millions)", COLORS["blue"], True),
+        "Claims cost": ("total_claims_cost", "Claims cost (₹ millions)", COLORS["orange"], True),
+        "Average premium": ("average_premium", "Average premium (₹)", COLORS["purple"], False),
+        "Exposure": ("total_exposure", "Exposure", COLORS["teal"], False),
+        "Observations": ("total_observations", "Observations", COLORS["pink"], False),
+    }
+    selected_metric = st.selectbox(
+        "Compare categories by",
+        list(metric_options),
+        key=f"{endpoint}_metric",
+    )
+    metric_field, axis_title, color, in_millions = metric_options[selected_metric]
+    chart_frame = frame[["category_label", metric_field]].copy()
+    if in_millions:
+        chart_frame[metric_field] = chart_frame[metric_field] / 1_000_000
+    render_bar_chart(
+        chart_frame,
+        "category_label",
+        metric_field,
+        chart_title,
+        color,
+        axis_title,
+        horizontal=True,
+        height=max(300, min(620, 48 * len(chart_frame))),
+    )
+
+    st.divider()
+    info_heading(
+        "Detailed breakdown",
+        "Values are grouped using the category fields shown in the first column. Policy counts are distinct within each category and should not be added across categories.",
+    )
+    rename = {
+        **category_labels,
+        "total_observations": "Total observations",
+        "total_customer_records": "Customer records",
+        "total_policies": "Total policies",
+        "total_premium": "Total premium",
+        "total_claims_cost": "Total claims cost",
+        "average_premium": "Average premium",
+        "total_exposure": "Total exposure",
+    }
+    metric_table(frame.drop(columns=["category_label"]), rename)
+
+
+def render_customer_page() -> None:
+    records = load_endpoint("customers").get("customers", [])
+    st.subheader("👥 Customer analysis")
+    if not records:
+        st.info("No customer breakdown data is currently available.")
+        return
+    frame = pd.DataFrame(records)
+    frame["gender"] = frame["gender"].fillna("Not available").astype(str)
+    render_metric_row([
+        ("Customer groups", f"{len(frame):,}", "Number of gender groups returned by the customer analysis."),
+        ("Customer records", f"{int(frame['total_customer_records'].sum()):,}", METRIC_HELP["Customer records"]),
+        ("Total observations", f"{int(frame['total_observations'].sum()):,}", METRIC_HELP["Total observations"]),
+        ("Total premium", format_currency_millions(float(frame["total_premium"].sum())), METRIC_HELP["Total premium"]),
+    ])
+    a, b = st.columns(2)
+    with a:
+        st.markdown("**Customer records by gender**")
+        render_bar_chart(frame, "gender", "total_customer_records", "Gender", COLORS["purple"], "Customer records")
+    with b:
+        st.markdown("**Premium by gender**")
+        premium = frame.assign(premium_m=frame["total_premium"] / 1_000_000)
+        render_bar_chart(premium, "gender", "premium_m", "Gender", COLORS["blue"], "₹ millions")
+    metric_table(frame, {
+        "gender": "Gender",
+        "total_observations": "Total observations",
+        "total_customer_records": "Customer records",
+        "total_policies": "Total policies",
+        "total_premium": "Total premium",
+        "total_claims_cost": "Total claims cost",
+        "average_premium": "Average premium",
+        "total_exposure": "Total exposure",
+    })
+
+
+def render_cohort_page() -> None:
+    records = load_endpoint("customer_cohorts").get("customer_cohorts", [])
+    st.subheader("🧑‍🤝‍🧑 Customer cohort analysis")
+    if not records:
+        st.info("No customer cohort data is currently available.")
+        return
+    frame = pd.DataFrame(records)
+    frame["cohort_year"] = frame["year_effect_insured"].apply(
+        lambda value: str(int(value)) if pd.notna(value) else "Not available"
+    )
+    render_metric_row([
+        ("Cohorts", f"{len(frame):,}", "Number of insured-effective-year groups returned by the API."),
+        ("Customer records", f"{int(frame['total_customer_records'].sum()):,}", METRIC_HELP["Customer records"]),
+        ("Total observations", f"{int(frame['total_observations'].sum()):,}", METRIC_HELP["Total observations"]),
+        ("Total premium", format_currency_millions(float(frame["total_premium"].sum())), METRIC_HELP["Total premium"]),
+    ])
+    info_heading(
+        "Cohort definition",
+        "A cohort groups customer records by YEAR_EFFECT_INSURED, the year insurance became effective for the insured. This is not necessarily the same as the reporting period in the overview.",
+    )
+    a, b = st.columns(2)
+    with a:
+        st.markdown("**Customer records by effective year**")
+        render_bar_chart(frame, "cohort_year", "total_customer_records", "Effective year", COLORS["purple"], "Customer records")
+    with b:
+        st.markdown("**Premium by effective year**")
+        premium = frame.assign(premium_m=frame["total_premium"] / 1_000_000)
+        render_bar_chart(premium, "cohort_year", "premium_m", "Effective year", COLORS["blue"], "₹ millions")
+    metric_table(frame.drop(columns=["cohort_year"]), {
+        "year_effect_insured": "Year insured became effective",
+        "total_observations": "Total observations",
+        "total_customer_records": "Customer records",
+        "total_policies": "Total policies",
+        "total_premium": "Total premium",
+        "total_claims_cost": "Total claims cost",
+        "average_premium": "Average premium",
+        "total_exposure": "Total exposure",
+    })
 
 
 st.title("Insurance Risk Intelligence Platform")
@@ -150,21 +419,54 @@ st.caption("Portfolio analytics and insurance risk intelligence")
 
 with st.sidebar:
     st.title("📊 Navigation")
-    st.caption("Portfolio overview")
+    page = st.radio(
+        "Dashboard pages",
+        list(PAGE_DESCRIPTIONS),
+        label_visibility="collapsed",
+    )
+    st.caption(PAGE_DESCRIPTIONS[page])
     if st.button("🔄 Refresh dashboard", use_container_width=True):
-        load_overview_data.clear()
+        load_endpoint.clear()
         st.rerun()
 
 try:
-    with st.spinner("Loading portfolio analytics..."):
-        summary_data, yearly_data = load_overview_data()
-
-    st.subheader("📌 Portfolio overview")
-    render_kpis(summary_data)
-
-    st.divider()
-    st.subheader("📈 Yearly performance trends")
-    render_yearly_trends(yearly_data)
+    with st.spinner(f"Loading {page.lower()}..."):
+        if page == "Portfolio overview":
+            render_overview()
+        elif page == "Product analysis":
+            render_breakdown_page(
+                endpoint="products",
+                response_key="products",
+                title="🧩 Product analysis",
+                category_fields=["type_product", "reimbursement"],
+                category_labels={"type_product": "Product type", "reimbursement": "Reimbursement"},
+                chart_category="category_label",
+                chart_title="Product / reimbursement",
+            )
+        elif page == "Channel analysis":
+            render_breakdown_page(
+                endpoint="channels",
+                response_key="channels",
+                title="🏬 Channel analysis",
+                category_fields=["distribution_channel"],
+                category_labels={"distribution_channel": "Distribution channel"},
+                chart_category="category_label",
+                chart_title="Distribution channel",
+            )
+        elif page == "Policy analysis":
+            render_breakdown_page(
+                endpoint="policies",
+                response_key="policies",
+                title="📄 Policy analysis",
+                category_fields=["type_policy", "type_policy_dg"],
+                category_labels={"type_policy": "Policy type", "type_policy_dg": "Policy DG type"},
+                chart_category="category_label",
+                chart_title="Policy type / DG type",
+            )
+        elif page == "Customer analysis":
+            render_customer_page()
+        elif page == "Customer cohort analysis":
+            render_cohort_page()
 
     st.caption("Data source: Gold layer via the authenticated Insurance Risk Intelligence API.")
 except DashboardAPIError as exc:
@@ -173,5 +475,5 @@ except DashboardAPIError as exc:
         "Confirm that FastAPI is running and that API_ACCESS_KEY is configured "
         "for this Streamlit process."
     )
-except RuntimeError as exc:
-    st.error(f"Dashboard configuration error: {exc}")
+except (RuntimeError, KeyError, ValueError) as exc:
+    st.error(f"Dashboard configuration or data error: {exc}")
