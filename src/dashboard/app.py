@@ -20,13 +20,18 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Saturated, high-contrast palette shared consistently across dashboard pages.
 COLORS = {
-    "blue": "#3977D5",
-    "orange": "#E58B36",
-    "teal": "#16A085",
-    "purple": "#8E63CE",
-    "pink": "#DF5D78",
+    "blue": "#2563EB",
+    "orange": "#F97316",
+    "teal": "#0F9D8A",
+    "purple": "#7C3AED",
+    "pink": "#DB2777",
 }
+CHART_PALETTE = [
+    "#2563EB", "#F97316", "#0F9D8A", "#7C3AED",
+    "#DB2777", "#0891B2", "#CA8A04", "#4F46E5",
+]
 METRIC_HELP = {
     "Total policies": (
         "Number of distinct insurance policy IDs represented in the data. "
@@ -82,6 +87,13 @@ st.markdown(
         vertical-align: middle;
     }
     .page-intro { color: #64748b; margin-top: -8px; margin-bottom: 18px; }
+    [data-testid="stVegaLiteChart"] {
+        background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+        border: 1px solid #e1e8f5;
+        border-radius: 12px;
+        padding: 8px 8px 2px 8px;
+        box-shadow: 0 3px 12px rgba(31, 55, 95, 0.07);
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -144,7 +156,10 @@ def render_bar_chart(
         return
 
     if horizontal:
-        bars = alt.Chart(chart_data).mark_bar(color=color, cornerRadiusEnd=4).encode(
+        bars = alt.Chart(chart_data).mark_bar(
+            color=color, opacity=0.96, cornerRadiusEnd=5,
+            stroke=color, strokeWidth=0.4,
+        ).encode(
             y=alt.Y(
                 f"{category}:N",
                 sort="-x",
@@ -171,7 +186,9 @@ def render_bar_chart(
         chart = (bars + labels).properties(height=height)
     else:
         bars = alt.Chart(chart_data).mark_bar(
-            color=color, cornerRadiusTopLeft=4, cornerRadiusTopRight=4
+            color=color, opacity=0.96,
+            cornerRadiusTopLeft=5, cornerRadiusTopRight=5,
+            stroke=color, strokeWidth=0.4,
         ).encode(
             x=alt.X(
                 f"{category}:N",
@@ -197,7 +214,22 @@ def render_bar_chart(
             text=alt.Text(f"{value}:Q", format=",.2f"),
         )
         chart = (bars + labels).properties(height=height)
-    st.altair_chart(chart.configure_view(strokeOpacity=0), use_container_width=True)
+    chart = chart.configure_view(strokeOpacity=0, fill="#FBFCFF").configure_axis(
+        gridColor="#DCE5F2",
+        gridOpacity=0.9,
+        domainColor="#AAB8CC",
+        tickColor="#AAB8CC",
+        labelColor="#334155",
+        titleColor="#1E293B",
+        labelFontSize=11,
+        titleFontSize=12,
+    ).configure_title(
+        color="#172B4D",
+        fontSize=14,
+        fontWeight="bold",
+        anchor="start",
+    )
+    st.altair_chart(chart, use_container_width=True)
 
 
 def metric_table(frame: pd.DataFrame, rename: dict[str, str]) -> None:
@@ -388,8 +420,10 @@ def render_cohort_line_chart(
         alt.Chart(data)
         .mark_line(
             color=color,
-            strokeWidth=2.5,
-            point=alt.OverlayMarkDef(filled=True, size=58, color=color),
+            strokeWidth=3.5,
+            point=alt.OverlayMarkDef(
+                filled=True, size=78, color=color, stroke="#FFFFFF", strokeWidth=1.5
+            ),
         )
         .encode(
             x=alt.X(
@@ -415,7 +449,18 @@ def render_cohort_line_chart(
             ],
         )
         .properties(height=height, title=title)
-        .configure_view(strokeOpacity=0)
+        .configure_view(strokeOpacity=0, fill="#FBFCFF")
+        .configure_axis(
+            gridColor="#DCE5F2",
+            gridOpacity=0.9,
+            domainColor="#AAB8CC",
+            tickColor="#AAB8CC",
+            labelColor="#334155",
+            titleColor="#1E293B",
+            labelFontSize=11,
+            titleFontSize=12,
+        )
+        .configure_title(color="#172B4D", fontSize=14, fontWeight="bold", anchor="start")
     )
     st.altair_chart(chart, use_container_width=True)
 
