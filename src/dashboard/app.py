@@ -7,6 +7,7 @@ SRC_DIR = Path(__file__).resolve().parents[1]
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -88,34 +89,60 @@ def render_yearly_trends(yearly: dict) -> None:
     frame["premium_m"] = frame["total_premium"] / 1_000_000
     frame["claims_cost_m"] = frame["total_claims_cost"] / 1_000_000
 
+    def render_column_chart(
+        metric: str,
+        y_title: str,
+        color: str,
+        tooltip_title: str,
+    ) -> None:
+        """Render a categorical yearly column chart with bold axis typography."""
+        chart = (
+            alt.Chart(frame)
+            .mark_bar(color=color, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+            .encode(
+                x=alt.X(
+                    "period:N",
+                    title="Year",
+                    sort=alt.SortField(field="period", order="ascending"),
+                    axis=alt.Axis(
+                        labelFontWeight="bold",
+                        titleFontWeight="bold",
+                        labelColor="#34445B",
+                        titleColor="#24364D",
+                    ),
+                ),
+                y=alt.Y(
+                    f"{metric}:Q",
+                    title=y_title,
+                    axis=alt.Axis(
+                        labelFontWeight="bold",
+                        titleFontWeight="bold",
+                        labelColor="#34445B",
+                        titleColor="#24364D",
+                    ),
+                ),
+                tooltip=[
+                    alt.Tooltip("period:N", title="Year"),
+                    alt.Tooltip(f"{metric}:Q", title=tooltip_title, format=",.2f"),
+                ],
+            )
+            .properties(height=300)
+            .configure_view(strokeOpacity=0)
+        )
+        st.altair_chart(chart, use_container_width=True)
+
     premium_col, claims_col, exposure_col = st.columns(3)
     with premium_col:
         st.subheader("💰 Premium")
-        st.line_chart(
-            frame,
-            x="period",
-            y="premium_m",
-            color="#3977D5",
-            y_label="₹ millions",
-        )
+        render_column_chart("premium_m", "₹ millions", "#3977D5", "Premium (₹M)")
     with claims_col:
         st.subheader("🧾 Claims cost")
-        st.line_chart(
-            frame,
-            x="period",
-            y="claims_cost_m",
-            color="#E58B36",
-            y_label="₹ millions",
+        render_column_chart(
+            "claims_cost_m", "₹ millions", "#E58B36", "Claims cost (₹M)"
         )
     with exposure_col:
         st.subheader("🛡️ Exposure")
-        st.line_chart(
-            frame,
-            x="period",
-            y="total_exposure",
-            color="#16A085",
-            y_label="Exposure",
-        )
+        render_column_chart("total_exposure", "Exposure", "#16A085", "Exposure")
 
 
 st.title("Insurance Risk Intelligence Platform")
