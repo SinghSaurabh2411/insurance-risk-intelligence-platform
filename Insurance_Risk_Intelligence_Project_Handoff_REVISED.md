@@ -1,78 +1,38 @@
 # Insurance Risk Intelligence Platform — Project Handoff
 
-**Status:** Frozen post-Gold + Airflow validation state  
+**Status:** Warehouse frozen; orchestration, API and dashboard implemented  
 **Repository:** SinghSaurabh2411/insurance-risk-intelligence-platform  
-**Validated through:** Bronze → Silver → Gold → Airflow orchestration  
-**Latest implementation baseline:** f07ac0ef74e8bcf4be27847ad8b314ba58c5da72
+**Implementation reference:** current GitHub `main`; SQL DDL and Python code define implementation  
+**Validation reference:** `docs/VALIDATION.md`
 
 ## Authority rules
 
-- GitHub `main` and repository code/Oracle DDL are implementation authority.
-- Documentation records design intent and validated execution evidence.
-- Never call a layer implemented without code/DDL and execution evidence.
-- Preserve frozen naming and business grain unless explicitly changed.
-- Do not claim tests/execution passed without evidence.
-- Keep credentials and local JDBC drivers out of Git.
+- Inspect current GitHub `main` before continuing work; do not treat an older handoff snapshot as newer than the repository.
+- SQL DDL defines Oracle structures, keys and constraints.
+- Python code defines ETL projections, transformations, load patterns, API and dashboard behavior.
+- Execution/validation claims must be grounded in recorded run evidence; code presence alone is not proof of successful runtime execution.
+- Documentation describes the implementation and approved design intent; it must not override code/DDL.
+- Do not invent business definitions, units, source semantics or behavior not evidenced by source documentation or code.
+- Preserve frozen warehouse decisions unless explicitly changed by the user.
 
-## Architecture
-
-```text
-SOURCE CSV
-    |
-    v
-BRONZE
-    |
-    v
-SILVER
-    |
-    v
-GOLD
-    |
-    v
-Future analytics / API / AI
-```
-
-Schemas:
-
-```text
-DWH_CONTROL
-DWH_BRONZE
-DWH_SILVER
-DWH_GOLD
-```
-
-Frozen business grain:
+## Frozen warehouse grain
 
 ```text
 (ID_POLICY, ID_INSURED, PERIOD)
 ```
 
-## Bronze — implemented, validated, frozen
+## Bronze
 
-Target:
+Target: `DWH_BRONZE.BRONZE_POLICY_DATA`.
 
-```text
-DWH_BRONZE.BRONZE_POLICY_DATA
-```
+- CSV ingestion from the configured source directory; current repository source is `data/raw/BASE_DATA.csv`.
+- Complete-file SHA-256 is used for source-file version detection.
+- `ETL_CONTROL` checks the source filename and file hash against successful processing.
+- Bronze writes append; it does not perform record-level MERGE.
+- `RECORD_HASH` is a separate row-level fingerprint, not the complete-file hash.
+- Final validated source count recorded in `docs/VALIDATION.md`: 228,711.
 
-Strategy:
-
-- file-level SHA-256 source-file detection
-- append loading
-- `RECORD_HASH` over all source/business columns excluding audit columns
-- `ETL_CONTROL` checks source filename + source hash + SUCCESS status
-- same filename with a different hash is a new source version
-- no record-level MERGE
-
-Final validated count:
-
-```text
-228,711
-```
-
-Final source is `BASE_DATA.csv`. `policy_test.csv` was removed because it introduced duplicate business-grain observations.
-
-## Silver — implemented, validated, frozen
+## Silver
 
 Exactly eight business tables:
 
@@ -87,27 +47,17 @@ SILVER_COVERAGE
 SILVER_FINANCIAL
 ```
 
-Technical staging:
+- Observation-level tables use `(ID_POLICY, ID_INSURED, PERIOD)`.
+- `SILVER_TIME` contains only `PERIOD`, one row per distinct period.
+- Policy lifecycle year fields belong to `SILVER_POLICY`.
+- Insured lifecycle year fields belong to `SILVER_CUSTOMER`.
+- `COST_CLAIMS_YEAR` belongs to `SILVER_FINANCIAL`.
+- `SILVER_STAGE` is technical staging, not a ninth business table.
+- Oracle MERGE is used; it is not SCD Type 2.
 
-```text
-DWH_SILVER.SILVER_STAGE
-```
+## Gold
 
-Silver uses Oracle MERGE/upsert at `(ID_POLICY, ID_INSURED, PERIOD)`. It is not SCD2.
-
-Validated:
-
-- 228,711 Bronze rows
-- all eight Silver DQ checks passed
-- all eight MERGEs succeeded
-- Bronze/Silver reconciliation = 0 both directions
-- observation-key integrity = 0 invalid keys
-- rerun/idempotency validated
-- periods = 2017, 2018, 2019
-
-## Gold — implemented, validated, frozen
-
-Frozen star schema:
+Five dimensions and one fact:
 
 ```text
 DIM_TIME
@@ -118,174 +68,45 @@ DIM_CHANNEL
 FACT_POLICY
 ```
 
-There is **no FACT_CLAIMS** because the source has no claim-level business entity. `cost_claims_year` remains a policy-period financial measure.
+Grains/business keys defined by DDL:
+- `DIM_TIME`: `PERIOD`
+- `DIM_CUSTOMER`: `(ID_POLICY, ID_INSURED)`
+- `DIM_POLICY`: `ID_POLICY`
+- `DIM_PRODUCT`: `(TYPE_PRODUCT, REIMBURSEMENT)`
+- `DIM_CHANNEL`: `DISTRIBUTION_CHANNEL`
+- `FACT_POLICY`: `(ID_POLICY, ID_INSURED, PERIOD)`
 
-### Gold grains
-
-```text
-DIM_TIME      -> PERIOD
-DIM_CUSTOMER  -> (ID_POLICY, ID_INSURED)
-DIM_POLICY    -> ID_POLICY
-DIM_PRODUCT   -> (TYPE_PRODUCT, REIMBURSEMENT)
-DIM_CHANNEL   -> DISTRIBUTION_CHANNEL
-FACT_POLICY   -> (ID_POLICY, ID_INSURED, PERIOD)
-```
-
-Surrogate keys:
-
-```text
-TIME_KEY
-CUSTOMER_KEY
-POLICY_KEY
-PRODUCT_KEY
-CHANNEL_KEY
-```
-
-Gold currently uses deterministic surrogate keys and a full-refresh load. No SCD2 is used.
-
-### Gold implementation
-
-```text
-Database/17_CREATE_GOLD_DIMENSIONS.sql
-Database/18_CREATE_GOLD_FACT_POLICY.sql
-Database/19_CREATE_GOLD_STAGE.sql
-Database/20_CREATE_GOLD_INDEXES.sql
-Database/21_GOLD_DQ_CHECKS.sql
-
-src/gold/gold_transform.py
-src/gold/gold_loader.py
-```
+Gold transformation selects the latest observation period for each customer and policy dimension business key; product, channel and time inputs are distinct values. The current Gold loader performs a full refresh. There is no SCD Type 2 implementation and no `FACT_CLAIMS`. `COST_CLAIMS_YEAR` remains a policy-insured-period fact measure.
 
 `GOLD_STAGE` is technical staging only.
 
-### Gold execution evidence
+## Orchestration
 
-Complete Bronze → Silver → Gold execution succeeded.
+- Python orchestration: `src/orchestration/pipeline.py`.
+- Airflow DAG: `dags/insurance_risk_intelligence_pipeline.py`.
+- Task dependency: `bronze >> silver >> gold`.
+- DAG configuration: `schedule=None`, `catchup=False`, `max_active_runs=1`.
+- The DAG is unscheduled/manual by configuration. Refer to validation evidence for the recorded manual run; do not claim a production schedule.
 
-```text
-FACT_POLICY = 228,711
-```
+## FastAPI
 
-A Spark temporary-directory cleanup error appeared after successful pipeline completion during shutdown cleanup. It did not indicate a Gold data-load failure.
+The repository contains a FastAPI analytics API under `src/api/`. It reads Gold analytics data through the configured API database connection. API security, routes and runtime evidence must be described from the API source and README; do not imply write access to warehouse data.
 
-### Gold validation evidence
+## Streamlit
 
-```text
-FACT_POLICY rows                    228,711
-Distinct fact business keys        228,711
-Duplicate fact keys                     0
+The repository contains a six-page dashboard under `src/dashboard/`. It consumes the API through its API client and is not designed as a direct Oracle client. See `docs/DASHBOARD.md`.
 
-DIM_TIME                                  3
-DIM_CUSTOMER                        100,453
-DIM_POLICY                           45,162
-DIM_PRODUCT                               5
-DIM_CHANNEL                               3
+## RAG / NL2SQL
 
-Dimension business-key duplicates         0
-Invalid fact foreign keys                 0
-SILVER_NOT_IN_GOLD                        0
-GOLD_NOT_IN_SILVER                        0
-NULL fact dimension/business keys         0
-```
+RAG, vector database, embeddings, LLM provider integration and NL2SQL are future work, not implemented in the current repository. Do not select or describe a provider/model/vector store as frozen until separately researched and explicitly decided.
 
-Fact periods:
+## Documentation map
 
-```text
-2017 = 78,459
-2018 = 73,970
-2019 = 76,282
-```
+- `docs/01_Business_Documents/`: business objectives, glossary and source dictionary.
+- `docs/02_Data_Architecture/`: source system, data model, data flow, naming and Medallion documentation.
+- `docs/ARCHITECTURE.md`: concise implemented architecture.
+- `docs/ORCHESTRATION.md`: Python/Airflow execution contract.
+- `docs/DASHBOARD.md`: Streamlit pages and API consumption.
+- `docs/VALIDATION.md`: recorded warehouse and orchestration validation.
 
-Measure reconciliation:
-
-```text
-PREMIUM
-  Silver = 194864832.58909062
-  Gold   = 194864832.6043
-  Difference = 0.01520938
-
-COST_CLAIMS_YEAR
-  Difference = 0
-
-EXPOSURE_TIME
-  Difference = 0.000007009
-
-N_MEDICAL_SERVICES
-  Difference = 0
-```
-
-The Premium and Exposure differences are very small numeric precision/scale effects from Gold Oracle numeric definitions. Grain, row counts, keys, and the remaining measures reconcile exactly.
-
-## Current frozen status
-
-```text
-BRONZE
-  implemented / validated / frozen
-
-SILVER
-  implemented / DQ validated / reconciled / rerun validated / frozen
-
-GOLD
-  implemented / DQ validated / grain reconciled /
-  FK validated / measure reconciled within numeric precision tolerance /
-  frozen
-
-ORCHESTRATION
-  implemented / stage sequencing and fail-fast behavior
-
-AIRFLOW DAG
-  implemented / manual runtime execution validated
-
-FASTAPI
-  planned / not implemented
-
-STREAMLIT
-  planned / not implemented
-
-RAG / VECTOR DB / LLM
-  planned / not implemented
-```
-
-## Orchestration — implemented and runtime validated
-
-The repository now contains a thin orchestration layer that sequences the frozen stages without moving layer-specific transformation or persistence logic:
-
-```text
-BRONZE -> SILVER -> GOLD
-```
-
-Implementation:
-
-```text
-src/orchestration/pipeline.py
-src/orchestration/__init__.py
-dags/insurance_risk_intelligence_pipeline.py
-```
-
-The normal `src.main` entry point now delegates to the orchestration layer.
-
-The Airflow DAG is configured as `bronze >> silver >> gold`, with `catchup=False` and `max_active_runs=1`. It intentionally has no production schedule yet.
-
-Airflow runtime execution has been **manually triggered and completed successfully**. This is current execution evidence for the Airflow orchestration layer.
-
-## Next sequence
-
-The next work is:
-
-```text
-1. API / analytics interfaces
-2. GenAI / RAG capabilities
-```
-
-Do not recreate or re-profile frozen Bronze, Silver, or Gold unless a concrete implementation defect is found.
-
-## Final principles
-
-- Business grain remains `(ID_POLICY, ID_INSURED, PERIOD)`.
-- Bronze remains append + source-file SHA-256 detection + complete RECORD_HASH.
-- Silver remains eight business tables + technical stage + DQ + Oracle MERGE/upsert.
-- Gold remains five dimensions + FACT_POLICY + technical stage + full refresh.
-- No FACT_CLAIMS.
-- No SCD2 in current Silver or Gold implementation.
-- Airflow is an orchestration layer, currently validated by a successful manual run and intentionally unscheduled.
-- No credentials in Git.
+When updating documentation, inspect the relevant SQL and Python source first. If implementation evidence does not establish a statement, label it unverified or omit it rather than infer it.
