@@ -1,191 +1,102 @@
 # Data Dictionary
 
-## Version
+## Purpose and authority
 
-| Item | Value |
-|------|------|
-| Version | 1.2 |
-| Status | Frozen |
-| Last Updated | 27-Sep-2026 |
-| Author | Saurabh Singh |
+This document describes the implemented warehouse structures and the mappings visible in the committed SQL DDL and Python transformations. The SQL DDL defines Oracle table structures and constraints; the Python projection and transformation code defines the columns selected and the transformation behavior.
 
----
+The accompanying Excel workbook is retained as source-level metadata. This Markdown document is the implementation-aligned warehouse reference. Where a business definition, unit, or source meaning is not established by code or DDL, it is not inferred here.
 
-# Purpose
+## Warehouse layers
 
-This document defines the metadata and lineage standards for the Insurance Risk Intelligence Platform.
+| Layer | Implemented object / behavior |
+|---|---|
+| Bronze | `DWH_BRONZE.BRONZE_POLICY_DATA`; source CSV ingestion, technical transformations, audit/record hash fields, append write mode |
+| Silver | Eight business projections, persisted to Oracle using MERGE |
+| Gold | Five dimensions and one fact table; Gold loader clears and rebuilds the analytical tables (full refresh) |
 
-It provides:
+## Business observation grain
 
-- Business meaning of source attributes
-- Data type mappings
-- Bronze, Silver and Gold layer lineage
-- Data quality expectations
-- Transformation requirements
-- Usage within reporting, analytics and AI workloads
+The observation-level business key used by Silver and FACT_POLICY is:
 
-The accompanying Excel workbook remains the authoritative source-level metadata repository. This Markdown document records the current warehouse architecture and implementation decisions.
-
----
-
-# Data Warehouse Layers
-
-| Layer | Purpose |
-|---------|----------|
-| Bronze | Source preservation with required technical type conversions, complete record lineage and file-level incremental control |
-| Silver | Validated, standardized and subject-oriented projections at the business observation grain |
-| Gold | Dimensional model (Dimensions and Facts) targeted for reporting, analytics and downstream applications |
-
----
-
-# Business Grain
-
-The frozen business observation grain is:
-
-~~~text
+```text
 (ID_POLICY, ID_INSURED, PERIOD)
-~~~
+```
 
-This identifies one insured individual under one policy for one observation period.
+## Bronze
 
----
+The committed Bronze loader reads source CSV files with schema inference disabled, validates and transforms them, calculates a file SHA-256, generates record/audit fields, and writes to `DWH_BRONZE.BRONZE_POLICY_DATA` using the configured Bronze write mode. The repository's configured write mode and DDL/code must be consulted for exact deployment configuration; the implementation uses append persistence.
 
-# Silver Subject Areas
+File-level duplicate detection uses the source filename and complete-file SHA-256 in `ETL_CONTROL`. `RECORD_HASH` is a separate row-level fingerprint. These hashes serve different purposes.
 
-The current Silver model contains eight tables:
+## Silver business tables
 
-| Silver Table | Subject Area |
-|--------------|--------------|
-| SILVER_RECORD | Record identity and technical lineage |
-| SILVER_TIME | Observation and calendar attributes |
-| SILVER_POLICY | Policy attributes |
-| SILVER_CUSTOMER | Insured-person attributes |
-| SILVER_PRODUCT | Insurance product attributes |
-| SILVER_CHANNEL | Distribution channel |
-| SILVER_COVERAGE | Coverage and utilization measures |
-| SILVER_FINANCIAL | Policy financial measures |
+The projection definitions in `src/silver/silver_transform.py` and the corresponding DDL files define these eight business tables:
 
-### Important mapping decisions
+| Table | Projected columns | Grain |
+|---|---|---|
+| `SILVER_RECORD` | `ID, ID_POLICY, ID_INSURED, PERIOD, RECORD_HASH, LOAD_ID, LOAD_TIMESTAMP, SOURCE_FILE, ETL_CREATED_BY` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_TIME` | `PERIOD` | One row per distinct `PERIOD` |
+| `SILVER_POLICY` | `ID_POLICY, ID_INSURED, PERIOD, DATE_EFFECT_POLICY, DATE_LAPSE_POLICY, YEAR_EFFECT_POLICY, YEAR_LAPSE_POLICY, SENIORITY_POLICY, TYPE_POLICY, TYPE_POLICY_DG, NEW_BUSINESS, LAPSE` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_CUSTOMER` | `ID_INSURED, ID_POLICY, PERIOD, DATE_EFFECT_INSURED, DATE_LAPSE_INSURED, YEAR_EFFECT_INSURED, YEAR_LAPSE_INSURED, SENIORITY_INSURED, GENDER, AGE` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_PRODUCT` | `ID_POLICY, ID_INSURED, PERIOD, TYPE_PRODUCT, REIMBURSEMENT` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_CHANNEL` | `ID_POLICY, ID_INSURED, PERIOD, DISTRIBUTION_CHANNEL` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_COVERAGE` | `ID_POLICY, ID_INSURED, PERIOD, EXPOSURE_TIME, N_MEDICAL_SERVICES` | `(ID_POLICY, ID_INSURED, PERIOD)` |
+| `SILVER_FINANCIAL` | `ID_POLICY, ID_INSURED, PERIOD, PREMIUM, COST_CLAIMS_YEAR` | `(ID_POLICY, ID_INSURED, PERIOD)` |
 
-- SILVER_TIME contains PERIOD only, at one row per observation period.
-- YEAR_EFFECT_POLICY and YEAR_LAPSE_POLICY → SILVER_POLICY
-- YEAR_EFFECT_INSURED and YEAR_LAPSE_INSURED → SILVER_CUSTOMER
-- REIMBURSEMENT → SILVER_PRODUCT
-- COST_CLAIMS_YEAR → SILVER_FINANCIAL
-- N_MEDICAL_SERVICES → SILVER_COVERAGE
-- Research-enrichment/contextual attributes remain Bronze-only in the current Silver design.
-- No separate SILVER_CLAIMS table is introduced because the source does not provide a separate claim-level business grain.
-- No separate SILVER_ENRICHMENT table is introduced because enrichment is a processing/domain concept rather than a sufficiently justified business entity.
+`SILVER_STAGE` is a technical staging table used by the Silver load path; it is not a ninth business subject table.
 
----
+Important implemented placements:
+- Policy lifecycle year fields are in `SILVER_POLICY`.
+- Insured lifecycle year fields are in `SILVER_CUSTOMER`.
+- `SILVER_TIME` contains only `PERIOD`.
+- `COST_CLAIMS_YEAR` is in `SILVER_FINANCIAL`; no claim-level Silver table is defined.
 
-# Silver Loading Standard
+The Silver merge implementation uses `(ID_POLICY, ID_INSURED, PERIOD)` for observation-level targets and `PERIOD` for `SILVER_TIME`.
 
-Silver is planned to use Oracle MERGE/upsert processing at the frozen business observation grain:
+## Gold dimensions
 
-~~~text
-(ID_POLICY, ID_INSURED, PERIOD)
-~~~
+The DDL in `Database/17_CREATE_GOLD_DIMENSIONS.sql` defines:
 
-The intended behavior is:
+| Dimension | Business key / uniqueness | Attributes selected by Gold transform |
+|---|---|---|
+| `DIM_TIME` | `PERIOD` | `PERIOD` |
+| `DIM_CUSTOMER` | `(ID_POLICY, ID_INSURED)` | `DATE_EFFECT_INSURED, DATE_LAPSE_INSURED, YEAR_EFFECT_INSURED, YEAR_LAPSE_INSURED, GENDER` |
+| `DIM_POLICY` | `ID_POLICY` | `TYPE_POLICY, TYPE_POLICY_DG, DATE_EFFECT_POLICY, DATE_LAPSE_POLICY, YEAR_EFFECT_POLICY, YEAR_LAPSE_POLICY` |
+| `DIM_PRODUCT` | `(TYPE_PRODUCT, REIMBURSEMENT)` | `TYPE_PRODUCT, REIMBURSEMENT` |
+| `DIM_CHANNEL` | `DISTRIBUTION_CHANNEL` | `DISTRIBUTION_CHANNEL` |
 
-- matched business observation → update the current Silver representation
-- unmatched business observation → insert a new Silver row
+The Gold transform selects the latest `PERIOD` row for each `(ID_POLICY, ID_INSURED)` customer key and each `ID_POLICY` policy key. Product, channel, and time dimension inputs are distinct combinations/periods. Surrogate keys are assigned in the Gold loader.
 
-This is an incremental current-state maintenance pattern.
+## Gold fact
 
-**MERGE/upsert is not SCD Type 2.**
+Only `FACT_POLICY` is defined in the committed Gold DDL. Its primary/business grain is `(ID_POLICY, ID_INSURED, PERIOD)`. It contains five dimension keys, the three business-key columns, measures and observation attributes, plus load/source lineage fields.
 
-SCD Type 2 requires preservation of historical versions with temporal/current-row handling. It will be evaluated for Gold dimensions when the business requirement warrants it.
+Measures and attributes defined by `Database/18_CREATE_GOLD_FACT_POLICY.sql`:
+- `PREMIUM`
+- `COST_CLAIMS_YEAR`
+- `EXPOSURE_TIME`
+- `N_MEDICAL_SERVICES`
+- `AGE`
+- `SENIORITY_POLICY`
+- `SENIORITY_INSURED`
+- `NEW_BUSINESS`
+- `LAPSE`
 
----
+Lineage fields: `LOAD_ID, LOAD_TIMESTAMP, SOURCE_FILE, RECORD_HASH, ETL_CREATED_BY`.
 
-# Bronze Loading Standard
+There is no `FACT_CLAIMS` table in the committed Gold DDL or Gold loader.
 
-Bronze is implemented using:
+## Technical staging
 
-- Complete source-file SHA-256
-- ETL_CONTROL lookup using SOURCE_FILE + SOURCE_FILE_HASH
-- Skip when the exact source-file version has already completed successfully
-- Append persistence into BRONZE_POLICY_DATA
+- `DWH_SILVER.SILVER_STAGE`: Silver staging object.
+- `DWH_GOLD.GOLD_STAGE`: Gold staging object.
 
-This is file-level incremental processing, not record-level MERGE.
+These are technical load objects, not additional business subject areas or dimensions/facts.
 
----
+## Components outside the warehouse
 
-# Data Quality Standards
+The repository also contains Python implementation for orchestration, FastAPI and Streamlit. Their details belong in the corresponding operational documentation. RAG/NL2SQL are not described here as implemented warehouse components.
 
-The following validations apply across the warehouse:
+## Scope limitation
 
-| Category | Rule |
-|-----------|------|
-| IDs | Must be unique where applicable |
-| Dates | Valid Oracle DATE values |
-| Numeric values | Must conform to documented source/business expectations |
-| Nullable fields | Only fields explicitly permitted to be NULL may contain NULL |
-| Enumerations | Must conform to documented source values |
-| Business grain | (ID_POLICY, ID_INSURED, PERIOD) integrity must be maintained |
-| Lineage | Source and load lineage must remain traceable |
-
----
-
-# Transformation Standards
-
-General ETL principles:
-
-- Preserve source business keys.
-- Standardize Oracle datatypes.
-- Convert source dates to Oracle DATE.
-- Preserve complete source-record lineage.
-- Keep research-enrichment attributes in Bronze unless a future business requirement justifies a Silver subject area.
-- Do not create separate entities solely to hold leftover columns.
-- Maintain end-to-end lineage from Bronze to Gold.
-- Apply Silver MERGE/upsert at the documented business grain.
-- Do not treat Silver MERGE/upsert as SCD Type 2.
-
----
-
-# Gold Objects
-
-## Dimensions
-
-~~~text
-DIM_CUSTOMER
-DIM_POLICY
-DIM_PRODUCT
-DIM_CHANNEL
-DIM_TIME
-~~~
-
-## Facts
-
-~~~text
-FACT_POLICY
-FACT_CLAIMS
-~~~
-
-FACT_CLAIMS remains a future design decision because the source does not contain a separate claim-level business grain.
-
----
-
-# Planned Platform Components
-
-The target architecture includes:
-
-- **Apache Airflow** — planned orchestration layer
-- **FastAPI** — planned API/service layer
-- **Streamlit** — planned dashboard/application layer
-- **RAG** — planned GenAI retrieval capability
-- **NL2SQL** — planned natural-language query capability
-
-These components are intentionally documented as planned until corresponding implementation exists in the repository.
-
----
-
-# Version History
-
-| Version | Date | Description |
-|----------|------|-------------|
-| 1.0 | 28-Jun-2026 | Initial frozen source metadata version |
-| 1.1 | 27-Sep-2026 | Reconciled current eight-table Silver architecture, Silver MERGE/upsert strategy, and planned downstream component status |
-| 1.2 | 27-Sep-2026 | Corrected Silver time grain: SILVER_TIME contains PERIOD only; observation-level YEAR_* attributes moved to SILVER_POLICY and SILVER_CUSTOMER |
+This document intentionally does not invent business definitions, units, domain constraints, or transformation rules not explicitly present in the source code or DDL. Refer to source metadata for definitions and validate any ambiguous source semantics before using them in analytics or retrieval.
