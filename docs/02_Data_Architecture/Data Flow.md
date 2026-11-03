@@ -2,291 +2,91 @@
 
 ## Purpose
 
-This document describes the end-to-end movement of data through the platform.
-
-The project follows a Medallion Architecture where data progresses through Bronze, Silver, and Gold layers before reaching planned downstream applications.
-
-The currently implemented ETL engine is PySpark. **Apache Airflow is planned as the orchestration layer and is not currently treated as implemented.**
-
----
-
-# End-to-End Data Flow
-
-~~~text
-Source Dataset (CSV)
-        │
-        ▼
-PySpark Bronze ETL
-        │
-        ▼
-BRONZE_POLICY_DATA
-        │
-        ▼
-PySpark Silver ETL
-        │
-        ├── SILVER_RECORD
-        ├── SILVER_TIME
-        ├── SILVER_POLICY
-        ├── SILVER_CUSTOMER
-        ├── SILVER_PRODUCT
-        ├── SILVER_CHANNEL
-        ├── SILVER_COVERAGE
-        └── SILVER_FINANCIAL
-        │
-        ▼
-PySpark Gold ETL
-        │
-        ├── DIM_POLICY
-        ├── DIM_CUSTOMER
-        ├── DIM_PRODUCT
-        ├── DIM_CHANNEL
-        ├── DIM_TIME
-        ├── FACT_POLICY
-        └── FACT_CLAIMS
-        │
-        ▼
-Planned consumers
-        ├── FastAPI
-        ├── Streamlit
-        └── RAG / NL2SQL
-~~~
-
----
-
-# Data Processing Flow
-
-~~~text
-Source CSV
-      │
-      ▼
-Bronze Layer — implemented
-      │
-      ▼
-Silver Layer — logical design frozen; DDL/ETL pending
-      │
-      ▼
-Gold Layer — planned implementation
-      │
-      ▼
-Planned Analytics & AI Applications
-~~~
-
----
-
-# Step 1 – Source Ingestion
-
-Input consists of the insurance policy CSV dataset.
-
-The source dataset is treated as the source of truth for the Bronze ingestion process.
-
----
-
-# Step 2 – Bronze Layer
-
-The implemented Bronze ETL performs:
-
-- CSV discovery and ingestion
-- Source schema validation
-- Technical date and numeric type conversion
-- Business-key validation
-- Record-level SHA-256 generation
-- ETL audit-column generation
-- Oracle loading into BRONZE_POLICY_DATA
-- File-level incremental detection
-
-### Bronze incremental detection
-
-For each source file:
-
-~~~text
-Calculate complete-file SHA-256
-          │
-          ▼
-Check ETL_CONTROL for:
-SOURCE_FILE + SOURCE_FILE_HASH + SUCCESS
-          │
-       ┌──┴──┐
-       │     │
-     match  no match
-       │     │
-      skip  process
-             │
-             ▼
-       Bronze APPEND
-~~~
-
-This is **file-level incremental processing**, not record-level MERGE/upsert.
-
----
-
-# Step 3 – Silver Layer
-
-The Silver layer reads the Bronze data and separates it into eight subject-oriented tables. `SILVER_TIME` contains only the distinct observation `PERIOD`; policy and insured lifecycle year attributes remain with their respective subject areas.
-
-- SILVER_RECORD
-- SILVER_TIME
-- SILVER_POLICY
-- SILVER_CUSTOMER
-- SILVER_PRODUCT
-- SILVER_CHANNEL
-- SILVER_COVERAGE
-- SILVER_FINANCIAL
-
-The frozen business observation grain is:
-
-~~~text
-(ID_POLICY, ID_INSURED, PERIOD)
-~~~
-
-Silver is planned to use Oracle MERGE/upsert against this business grain:
-
-- Existing business observation → update current Silver representation
-- New business observation → insert
-- Business grain remains explicit and validated
-
-This is **not SCD Type 2**. Historical dimension versioning will be considered later for Gold dimensions where justified.
-
----
-
-# Step 4 – Gold Layer
-
-The planned Gold ETL will build a dimensional model.
-
-Dimension tables:
-
-- DIM_POLICY
-- DIM_CUSTOMER
-- DIM_PRODUCT
-- DIM_CHANNEL
-- DIM_TIME
-
-Fact tables:
-
-- FACT_POLICY
-- FACT_CLAIMS
-
-The exact FACT_CLAIMS grain remains a future design decision because the source does not contain a separate claim-level entity.
-
----
-
-# Planned Data Consumption
-
-The Gold layer is the planned source for downstream applications.
-
-## FastAPI — Planned
-
-Provides REST APIs for accessing dimensional and fact data after the API layer is implemented.
-
-## Streamlit — Planned
-
-Provides interactive dashboards after the application layer is implemented.
-
-## RAG — Planned
-
-Retrieves approved business metadata/documentation for natural-language assistance after the GenAI layer is implemented.
-
-## NL2SQL — Planned
-
-Converts natural-language questions into controlled SQL against the Gold schema after the NL2SQL capability is implemented.
-
-These components are architectural targets, not current implementation claims.
-
----
-
-# Planned Workflow Orchestration
-
-Apache Airflow is the **planned orchestration layer**.
-
-The target execution order is:
-
-~~~text
-CSV
- ↓
-Bronze ETL
- ↓
-Silver ETL
- ↓
-Gold ETL
- ↓
-Data Validation
- ↓
-API / Dashboard / AI refresh
-~~~
-
-The current repository does not contain an implemented Airflow DAG, so Airflow is not described as an active production component.
-
----
-
-# Error Handling
-
-Implemented Bronze validation includes:
-
-- Source schema validation
-- Data-type validation
-- Business-key NULL checks
-- Business-grain uniqueness validation
-- ETL control status tracking
-- Source-file hashing
-- Error capture in the control table
-
-Silver and Gold validation responsibilities are defined in the architecture but remain pending implementation.
-
----
-
-# Data Lineage
-
-~~~text
-CSV
- │
- ▼
-BRONZE_POLICY_DATA
- │
- ▼
-Silver subject-area tables
- │
- ▼
-Gold dimensions / facts
- │
- ├────────► Planned FastAPI
- ├────────► Planned Streamlit
- ├────────► Planned RAG
- └────────► Planned NL2SQL
-~~~
-
-Complete source-record lineage is preserved through the implemented Bronze layer and is planned to be propagated into Silver and Gold.
-
----
-
-# Frozen Design Decisions
-
-| Decision | Value |
-|----------|-------|
-| Source | CSV Dataset |
-| ETL Engine | PySpark |
-| Database | Oracle 21c XE |
-| Architecture | Medallion |
-| Bronze Incremental Strategy | SOURCE_FILE + SHA-256 |
-| Bronze Write Strategy | APPEND |
-| Silver Incremental Strategy | MERGE / UPSERT — planned |
-| Silver MERGE Key | (ID_POLICY, ID_INSURED, PERIOD) |
-| Workflow Orchestration | Apache Airflow — planned |
-| API Layer | FastAPI — planned |
-| Dashboard | Streamlit — planned |
-| AI Layer | RAG + NL2SQL — planned |
-
----
-
-# Implementation Status
-
-| Component | Status |
-|-----------|--------|
-| Bronze ETL | Implemented and validated end-to-end |
-| Silver logical model | Frozen |
-| Silver DDL | Pending |
-| Silver ETL | Pending |
-| Gold model | Target architecture / pending implementation |
-| Airflow | Planned |
-| FastAPI | Planned |
-| Streamlit | Planned |
-| RAG | Planned |
-| NL2SQL | Planned |
+This document describes the implemented data movement visible in the committed Python and SQL code. It distinguishes warehouse ETL from orchestration and downstream consumption.
+
+## Implemented end-to-end warehouse flow
+
+```text
+BASE_DATA.csv
+    |
+    v
+PySpark Bronze ingestion / validation / transformation
+    |
+    v
+DWH_BRONZE.BRONZE_POLICY_DATA
+    |
+    v
+PySpark Silver projections
+    |
+    v
+DWH_SILVER.SILVER_STAGE
+    |
+    v
+Oracle MERGE into eight Silver business tables
+    |
+    v
+PySpark Gold transformations
+    |
+    v
+DWH_GOLD.GOLD_STAGE
+    |
+    v
+Gold dimensions + FACT_POLICY (full refresh)
+```
+
+## Bronze
+
+The Bronze loader:
+1. Discovers source CSV files.
+2. Calculates a complete-file SHA-256.
+3. Reads CSV data with schema inference disabled.
+4. Validates the source structure and data.
+5. Applies Bronze transformations, including typed fields and audit/record-hash fields.
+6. Writes to `DWH_BRONZE.BRONZE_POLICY_DATA`.
+7. Updates `ETL_CONTROL` with `STARTED`, `SUCCESS`, or `FAILED` status.
+
+The file handler and control-table logic use source filename plus file hash to determine whether an already-successful file version should be skipped. The complete-file SHA-256 is not the same as `RECORD_HASH`. Bronze persistence is append-oriented; it is not a record-level MERGE.
+
+## Silver
+
+`src/silver/silver_transform.py` defines eight projections:
+- `SILVER_RECORD`
+- `SILVER_TIME`
+- `SILVER_POLICY`
+- `SILVER_CUSTOMER`
+- `SILVER_PRODUCT`
+- `SILVER_CHANNEL`
+- `SILVER_COVERAGE`
+- `SILVER_FINANCIAL`
+
+Observation-level tables use `(ID_POLICY, ID_INSURED, PERIOD)`. `SILVER_TIME` is distinct by `PERIOD` and has one row per period. The SQL DDL defines the corresponding target columns and primary keys.
+
+The Silver loader writes projections to `DWH_SILVER.SILVER_STAGE`; `src/silver/silver_merge.py` then executes Oracle MERGE statements. Observation-level targets match on the three-column business key; `SILVER_TIME` matches on `PERIOD`.
+
+## Gold
+
+The Gold loader reads all eight Silver tables. The Gold transform:
+- Selects one latest-period customer row per `(ID_POLICY, ID_INSURED)`.
+- Selects one latest-period policy row per `ID_POLICY`.
+- Builds distinct product, channel and period dimension inputs.
+- Builds `FACT_POLICY` by joining the Silver projections on the observation grain and joining the five dimensions to obtain surrogate keys.
+
+The Gold loader clears the existing fact/dimension targets and reloads the dimensions and fact. This is a full-refresh pattern in the current implementation. The DDL defines five dimensions and one fact table; no `FACT_CLAIMS` exists.
+
+## Orchestration
+
+`src/orchestration/pipeline.py` defines the stage sequence Bronze -> Silver -> Gold. The Airflow DAG in `dags/insurance_risk_intelligence_pipeline.py` defines task dependencies `bronze >> silver >> gold`. It is configured with `schedule=None`, `catchup=False`, and `max_active_runs=1`. This means the DAG is manually triggered/unscheduled by configuration; do not describe it as a scheduled production workflow.
+
+## API and dashboard consumption
+
+The repository contains a FastAPI service under `src/api/` and a Streamlit dashboard under `src/dashboard/`. The dashboard's API client calls the service; the dashboard is not documented as connecting directly to Oracle. Consult `docs/DASHBOARD.md` and the API source for route/security details.
+
+RAG and NL2SQL are not part of the current implemented data flow documented by the warehouse ETL code.
+
+## Data lineage
+
+The fact construction carries `LOAD_ID`, `LOAD_TIMESTAMP`, `SOURCE_FILE`, `RECORD_HASH`, and `ETL_CREATED_BY` from the Silver record projection into `FACT_POLICY`. The Silver record projection itself carries these fields from Bronze.
+
+## Implementation boundary
+
+This document reports code/DDL behavior. It does not assert production scheduling, streaming ingestion, CDC, a separate claims entity, SCD Type 2, or unimplemented AI capabilities.
