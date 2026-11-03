@@ -2,258 +2,80 @@
 
 ## Purpose
 
-This project follows the **Medallion Architecture** to organize data into progressive quality layers.
-
-Each layer has a clearly defined responsibility:
-
-- **Bronze** preserves the source dataset with required technical type conversions and complete source lineage.
-- **Silver** stores validated, standardized, and business-oriented subject areas.
-- **Gold** stores dimensional models and fact tables optimized for analytics and downstream applications.
-
-The current implementation status is documented separately from the target architecture. Components are not described as implemented until corresponding code exists.
-
----
-
-# Architecture Overview
-
-~~~text
-                    Source Dataset (CSV)
-                            │
-                    PySpark Bronze ETL
-                            │
-                            ▼
-                 BRONZE_POLICY_DATA
-                            │
-                    PySpark Silver ETL
-                            │
-      ┌──────────────┬──────────────┬──────────────┬──────────────┐
-      ▼              ▼              ▼              ▼              ▼
- SILVER_RECORD  SILVER_TIME  SILVER_POLICY  SILVER_CUSTOMER  SILVER_PRODUCT
-      │              │              │              │              │
-      ├──────────────┼──────────────┼──────────────┤
-      ▼              ▼              ▼
- SILVER_CHANNEL  SILVER_COVERAGE  SILVER_FINANCIAL
-                            │
-                    PySpark Gold ETL
-                            │
-      ┌──────────────┬──────────────┬──────────────┬──────────────┐
-      ▼              ▼              ▼              ▼              ▼
- DIM_POLICY     DIM_CUSTOMER   DIM_PRODUCT   DIM_CHANNEL     DIM_TIME
-      │
-      ├──────────────┐
-      ▼              ▼
- FACT_POLICY      FACT_CLAIMS
-                            │
-                  Planned downstream consumers
-                            │
-             ┌──────────────┼──────────────┐
-             ▼              ▼              ▼
-          FastAPI       Streamlit      RAG / NL2SQL
-~~~
+This document describes the implemented Bronze, Silver and Gold layers based on the repository's SQL DDL and Python ETL code.
 
----
-
-# Bronze Layer
-
-## Purpose
-
-The Bronze layer preserves the source dataset and its complete source-record lineage. Required technical type conversions are applied before Oracle persistence.
-
-### Characteristics
-
-- One table
-- Source business columns retained
-- Technical date and numeric type conversions
-- Record-level SHA-256 hash
-- ETL audit columns
-- File-level incremental detection using source filename + SHA-256
-- Append persistence
-- No business deduplication or business enrichment
+## End-to-end layers
 
-### Table
+```text
+CSV source
+   |
+   v
+BRONZE_POLICY_DATA
+   |
+   v
+Eight Silver business projections
+   |
+   v
+Five Gold dimensions + FACT_POLICY
+```
 
-| Table |
-|---------|
-| BRONZE_POLICY_DATA |
+## Bronze layer
 
----
+Target: `DWH_BRONZE.BRONZE_POLICY_DATA`.
 
-# Silver Layer
+The Bronze pipeline discovers CSV files, reads them without schema inference, validates the source, applies typed transformations, generates row-level record hash and audit fields, and writes to Oracle using the configured append mode.
 
-## Purpose
+The complete source file is hashed with SHA-256. File-level incremental detection checks the successful filename/hash pair in `ETL_CONTROL`. A changed file with a different content hash is treated as a different file version by this mechanism. This is not a record-level MERGE.
 
-The Silver layer contains validated, standardized, and logically separated subject areas. Each table represents a meaningful business/domain subject area rather than a bucket for leftover columns.
+## Silver layer
 
-### Transformations
+The implemented Silver model contains exactly eight business tables:
 
-- Schema and data-type standardization
-- Data quality validation
-- Business-key and grain validation
-- Null and categorical validation
-- Subject-area projection
-- Lineage propagation
-- Incremental MERGE/upsert at the business observation grain
+1. `SILVER_RECORD`
+2. `SILVER_TIME`
+3. `SILVER_POLICY`
+4. `SILVER_CUSTOMER`
+5. `SILVER_PRODUCT`
+6. `SILVER_CHANNEL`
+7. `SILVER_COVERAGE`
+8. `SILVER_FINANCIAL`
 
-### Tables
+Observation-level targets use `(ID_POLICY, ID_INSURED, PERIOD)`. `SILVER_TIME` contains only `PERIOD` and uses that single column as its key. Policy lifecycle year attributes reside in `SILVER_POLICY`; insured lifecycle year attributes reside in `SILVER_CUSTOMER`; `COST_CLAIMS_YEAR` resides in `SILVER_FINANCIAL`.
 
-| Table | Purpose |
-|---------|----------|
-| SILVER_RECORD | Record-level identity and technical lineage |
-| SILVER_TIME | Observation period |
-| SILVER_POLICY | Policy-related attributes |
-| SILVER_CUSTOMER | Insured-person attributes |
-| SILVER_PRODUCT | Insurance product attributes |
-| SILVER_CHANNEL | Distribution-channel attributes |
-| SILVER_COVERAGE | Coverage and utilization measures |
-| SILVER_FINANCIAL | Policy financial measures |
+`SILVER_STAGE` is a technical staging table, not an additional business table. Silver persistence is implemented through Oracle MERGE statements.
 
-COST_CLAIMS_YEAR remains a financial measure in SILVER_FINANCIAL; the source does not contain a separate claim-level business grain.
+## Gold layer
 
-Research-enrichment/contextual attributes remain Bronze-only for the current Silver design unless a future business requirement establishes a justified subject area.
+The implemented Gold star schema consists of:
 
-### Silver Loading Strategy
+**Dimensions**
+- `DIM_TIME`: unique `PERIOD`.
+- `DIM_CUSTOMER`: unique `(ID_POLICY, ID_INSURED)`.
+- `DIM_POLICY`: unique `ID_POLICY`.
+- `DIM_PRODUCT`: unique `(TYPE_PRODUCT, REIMBURSEMENT)`.
+- `DIM_CHANNEL`: unique `DISTRIBUTION_CHANNEL`.
 
-Silver is planned to use Oracle MERGE/upsert processing using the frozen business observation grain:
+**Fact**
+- `FACT_POLICY`: one row per `(ID_POLICY, ID_INSURED, PERIOD)`.
 
-~~~text
-(ID_POLICY, ID_INSURED, PERIOD)
-~~~
+The fact stores five dimension foreign keys, the business key, policy-period measures, selected observation attributes and lineage fields. `COST_CLAIMS_YEAR` is a measure in `FACT_POLICY`; the current model does not define a claim-level fact. There is no `FACT_CLAIMS` table in the current DDL or loader.
 
-Conceptually:
+The Gold loader clears and reloads the dimensions and fact. Gold is therefore currently full-refresh, not Delta Lake MERGE and not SCD Type 2. Dimension selection uses the latest observation period for customer and policy keys; product, channel and time use distinct values.
 
-~~~text
-Bronze observation
-      │
-      ▼
-Validate / standardize
-      │
-      ▼
-Match Silver on business grain
-      │
-      ├── matched     → UPDATE
-      │
-      └── not matched → INSERT
-~~~
+`GOLD_STAGE` is technical staging only.
 
-This maintains the current validated Silver representation of each business observation. **MERGE/upsert is not SCD Type 2.**
+## Pipeline execution
 
-A true SCD Type 2 implementation requires historical versions and temporal/current-row handling. SCD Type 2 will be evaluated later for Gold dimensions where the business requirement justifies historical tracking.
+The Python orchestration sequence is Bronze -> Silver -> Gold. The Airflow DAG expresses the same task dependency. Its current configuration is manual/unscheduled (`schedule=None`), with `catchup=False` and `max_active_runs=1`.
 
----
+## Downstream application boundary
 
-# Gold Layer
+FastAPI and Streamlit source code exists in the repository. The dashboard consumes the API client rather than implementing a separate direct-Oracle data path. RAG and NL2SQL are not included as implemented components in the current warehouse ETL code.
 
-## Purpose
+## Implementation principles evidenced by code
 
-The Gold layer provides analytics-ready dimensional models.
-
-### Dimension Tables
-
-| Dimension | Description |
-|------------|-------------|
-| DIM_POLICY | Policy information |
-| DIM_CUSTOMER | Customer information |
-| DIM_PRODUCT | Product information |
-| DIM_CHANNEL | Distribution channel |
-| DIM_TIME | Calendar dimension |
-
-### Fact Tables
-
-| Fact | Description |
-|------|-------------|
-| FACT_POLICY | Policy metrics |
-| FACT_CLAIMS | Claims-related fact; exact business grain remains a future design decision |
-
-Gold is not yet described as implemented until corresponding code and DDL exist.
-
----
-
-# Planned Downstream Consumers
-
-The target architecture includes:
-
-- **FastAPI** — planned API/service layer
-- **Streamlit** — planned analytics/dashboard layer
-- **RAG** — planned retrieval-augmented generation capability
-- **NL2SQL** — planned natural-language-to-SQL capability
-
-These are target architecture components and are not currently treated as implemented.
-
----
-
-# Incremental Loading Strategy
-
-The project uses different incremental strategies by layer.
-
-### Bronze
-
-Bronze uses:
-
-~~~text
-SOURCE_FILE + SHA-256
-~~~
-
-If the same source filename and complete-file SHA-256 hash have already completed successfully, the source version is skipped. Otherwise it is processed and persisted using append.
-
-### Silver
-
-Silver is planned to use Oracle MERGE/upsert at:
-
-~~~text
-(ID_POLICY, ID_INSURED, PERIOD)
-~~~
-
-This is business-grain current-state maintenance and is distinct from SCD Type 2.
-
-### Gold
-
-Gold loading and historical dimension strategies remain future implementation decisions. SCD Type 2 will be applied only where the dimensional business requirement justifies it.
-
----
-
-# Data Quality Responsibilities
-
-| Layer | Responsibility |
-|---------|----------------|
-| Bronze | Source preservation, technical validation, lineage and file-level incremental control |
-| Silver | Validation, standardization, business-grain integrity and subject-area separation |
-| Gold | Analytics-ready dimensional modeling and business measures |
-
----
-
-# Design Principles
-
-- Preserve source business keys.
-- Keep the frozen business observation grain explicit.
-- Separate business/domain subject areas without creating unnecessary entities.
-- Do not introduce a Silver claims or enrichment entity without a justified business grain.
-- Preserve complete source-record lineage.
-- Use Bronze append + file-hash detection.
-- Use planned Silver MERGE/upsert at the business grain.
-- Do not equate MERGE/upsert with SCD Type 2.
-- Apply SCD Type 2 only where a future Gold dimensional requirement justifies it.
-- Document planned components as planned until their implementation exists.
-
----
-
-# Frozen Design Decisions
-
-| Decision | Status |
-|-----------|--------|
-| Architecture | Medallion |
-| ETL Engine | PySpark |
-| Database | Oracle 21c XE |
-| Bronze Incremental Detection | SOURCE_FILE + SHA-256 |
-| Bronze Write Strategy | APPEND |
-| Business Grain | (ID_POLICY, ID_INSURED, PERIOD) |
-| Bronze Table | BRONZE_POLICY_DATA |
-| Silver Tables | 8 subject-oriented tables |
-| Silver Write Strategy | MERGE / UPSERT — planned |
-| Silver MERGE Key | (ID_POLICY, ID_INSURED, PERIOD) |
-| SCD Type 2 | Future Gold design decision where justified |
-| Gold Layer | Star Schema |
-| Airflow | Planned orchestration layer |
-| FastAPI | Planned API/service layer |
-| Streamlit | Planned dashboard/application layer |
-| RAG | Planned GenAI retrieval capability |
-| NL2SQL | Planned natural-language query capability |
+- Bronze file-level idempotency is based on source filename and complete-file SHA-256.
+- Silver MERGE keys are explicit in the merge implementation.
+- Gold is rebuilt by the current loader.
+- The warehouse business observation grain is preserved in Silver and the fact.
+- Staging objects are kept distinct from business tables.
