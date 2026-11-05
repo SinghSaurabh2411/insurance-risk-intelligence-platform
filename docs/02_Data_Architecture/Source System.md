@@ -1,272 +1,60 @@
 # Source System
 
-**Version:** 2.0
-**Status:** 🔒 Frozen
-**Owner:** Data Engineering Team
+## Purpose
 
----
+This document records the source format and ingestion behavior evidenced by the committed repository code.
 
-# 1. Purpose
+## Source file
 
-This document describes the source system used in the Insurance Lakehouse project. It defines the characteristics of the source dataset, ingestion strategy, record grain, business keys, and architectural assumptions that govern data ingestion into the Medallion Architecture.
-
-Although the source dataset is static, the ingestion framework is intentionally designed using production-grade incremental loading patterns to simulate a real-world enterprise data platform.
-
----
-
-# 2. Source Overview
-
-| Attribute             | Value                         |
-| --------------------- | ----------------------------- |
-| Source Type           | Structured Dataset            |
-| Domain                | Health Insurance              |
-| Source Format         | Microsoft Excel (.xlsx)       |
-| Source System         | Research Dataset              |
-| Ingestion Type        | Batch                         |
-| Pipeline Design       | Incremental Batch Processing  |
-| Initial Load          | Full Load                     |
-| Ongoing Load Strategy | Incremental MERGE             |
-| Refresh Frequency     | Simulated Periodic Batch Load |
-| Data Volume           | ~220,000+ Records             |
-| Number of Attributes  | 42                            |
-| Observation Period    | Multiple Calendar Years       |
-| Primary Language      | English                       |
-
----
-
-# 3. Dataset Description
-
-The dataset contains insurance policy information for individual insured members across multiple calendar years.
-
-Each record combines customer information, policy attributes, insurance products, claims utilization, and selected socioeconomic enrichment variables.
-
-The dataset is treated as the operational source for the Lakehouse implementation.
-
----
-
-# 4. Business Grain (Frozen)
-
-Each record represents exactly one insured individual under one policy during one calendar year.
-
-**Business Grain**
+The repository's current source dataset is:
 
 ```text
-(ID_policy, ID_insured, period)
+data/raw/BASE_DATA.csv
 ```
 
-Where:
+The Bronze loader reads CSV files from the configured Bronze source directory. It uses the configured header and delimiter settings, disables schema inference, and reads values before applying explicit Bronze transformations.
 
-* **ID_policy** → Insurance policy identifier
-* **ID_insured** → Insured member within the policy
-* **period** → Calendar year
+The current repository also contains sample data under `data/sample/`; that sample workbook is not the file read by the committed Bronze loader in the current source configuration.
 
-This grain is maintained consistently throughout the Bronze, Silver, and Gold layers.
+## Source-to-Bronze target
 
----
-
-# 5. Business Keys
-
-## Natural Business Key
+The Bronze loader writes transformed source records to:
 
 ```text
-(ID_policy, ID_insured, period)
+DWH_BRONZE.BRONZE_POLICY_DATA
 ```
 
-This composite key uniquely identifies every business record.
+The Bronze DDL defines the target structure. The Python validation and transformation modules define the source schema expectations and transformation behavior. Do not use an older document's source-column count or attribute descriptions as implementation evidence without reconciling them to `src/bronze/bronze_validator.py` and `src/bronze/bronze_transform.py`.
 
----
+## Ingestion and file-version control
 
-## Source Identifier
+The current loader:
+1. Discovers unprocessed source files.
+2. Calculates SHA-256 from the complete file bytes.
+3. Reads the CSV.
+4. Registers the load in `ETL_CONTROL`.
+5. Validates and transforms the source data.
+6. Writes the result to Bronze.
+7. Marks the load `SUCCESS`, or `FAILED` when processing raises an exception.
 
-The dataset also provides:
+The file handler/control-table implementation checks prior successful processing using source filename and source-file hash. The hash identifies file content, not individual rows.
 
-```text
-ID = ID_policy + ID_insured
-```
+`RECORD_HASH` is generated separately for a transformed source record. It must not be confused with `SOURCE_FILE_HASH`.
 
-The `ID` column is retained for lineage and traceability.
+## Bronze write behavior
 
-Since an insured individual may exist across multiple years, **`ID` alone is not sufficient to uniquely identify a record across the complete dataset**. Therefore, `period` forms part of the business grain.
+The Bronze write mode is configured in Python configuration and used by the JDBC writer. The current design is append-oriented. No Delta Lake table or Delta Lake MERGE implementation is present in the Bronze loader.
 
----
+## Downstream mapping
 
-# 6. Source Categories
+The Bronze source is projected into the eight Silver tables defined by `SILVER_PROJECTIONS` in `src/silver/silver_transform.py`. The exact projected columns and their target grains are documented in `Data Model.md` and the Silver DDL files.
 
-The dataset contains two categories of data.
+The implemented Silver business subjects are record, time, policy, customer, product, channel, coverage and financial. The current code does not define `SILVER_CLAIMS` or `SILVER_ENRICHMENT`.
 
-## Original Dataset
+Gold is built from those eight Silver tables by `src/gold/gold_transform.py` and `src/gold/gold_loader.py`. The implemented Gold objects are five dimensions and `FACT_POLICY`.
 
-Business-operational insurance information including:
+## Source semantics and limitations
 
-* Customer
-* Policy
-* Product
-* Claims
-* Premium
-* Distribution Channel
-* Policy Lifecycle
+This document does not infer the business meaning, units, null semantics, or statistical interpretation of individual source attributes. Use the source data dictionary and verify ambiguous definitions with the dataset documentation before encoding them as business rules or RAG facts.
 
----
-
-## Research Enrichment
-
-Externally derived analytical attributes including:
-
-* Income Segmentation
-* Education Segmentation
-* Habitat Classification
-* Climate Classification
-* Insurance Penetration Metrics
-
-These attributes are selectively propagated beyond the Bronze layer based on analytical requirements.
-
----
-
-# 7. Business Domains
-
-The source dataset contains the following domains.
-
-| Domain        | Description           |
-| ------------- | --------------------- |
-| Technical     | Record identifiers    |
-| Customer      | Insured information   |
-| Policy        | Policy lifecycle      |
-| Product       | Insurance products    |
-| Claims        | Medical utilization   |
-| Sales         | Distribution channel  |
-| Time          | Calendar information  |
-| Socioeconomic | External enrichment   |
-| Environmental | Geographic enrichment |
-
----
-
-# 8. Source-to-Bronze Mapping
-
-The complete source dataset is ingested into a single Bronze table.
-
-| Source                    | Bronze Table       |
-| ------------------------- | ------------------ |
-| Insurance Dataset (.xlsx) | BRONZE_POLICY_DATA |
-
-Bronze preserves the raw source with minimal transformation.
-
----
-
-# 9. Source Data Characteristics
-
-* Structured tabular dataset
-* Mixed data types
-* One record per business grain
-* Nullable business attributes
-* Historical yearly observations
-* Includes research enrichment variables
-* Suitable for incremental processing
-
----
-
-# 10. Ingestion Strategy
-
-Although the research dataset is delivered as a static Excel file, the ingestion framework is intentionally implemented using an incremental loading strategy to emulate a production insurance data platform.
-
-The first execution performs a complete load.
-
-Subsequent executions use Delta Lake `MERGE` operations to perform incremental upserts.
-
-This enables:
-
-* Idempotent pipeline execution
-* Duplicate prevention
-* Efficient reprocessing
-* Slowly Changing Dimension (SCD) support
-* Production-ready ETL design
-
----
-
-# 11. Incremental Processing Strategy
-
-| Attribute          | Value                           |
-| ------------------ | ------------------------------- |
-| Initial Load       | Full Load                       |
-| Incremental Load   | Supported                       |
-| Processing Pattern | Batch Incremental               |
-| Merge Strategy     | Delta Lake MERGE                |
-| Business Key       | (ID_policy, ID_insured, period) |
-| Duplicate Handling | Upsert using MERGE              |
-| Change Detection   | Business Key Comparison         |
-| Pipeline Type      | Idempotent                      |
-
----
-
-# 12. Data Quality Expectations
-
-The source dataset is expected to satisfy the following conditions before Silver processing.
-
-* Business grain must remain unique.
-* Mandatory business keys cannot be null.
-* Dates must be valid.
-* Numeric fields must satisfy business rules defined in the Data Dictionary.
-* Categorical values must conform to documented domains.
-
-Any violations are handled within the Data Quality Framework during Silver processing.
-
----
-
-# 13. Source Assumptions
-
-The following assumptions apply throughout the project.
-
-* The source dataset represents the system of record.
-* Bronze stores the raw source with minimal transformation.
-* Business transformations begin in the Silver layer.
-* Missing lapse dates indicate active coverage.
-* Research enrichment variables are informational and may not be promoted to downstream analytical models.
-* Incremental loading is implemented as an architectural design decision despite the static nature of the dataset.
-
----
-
-# 14. Source Limitations
-
-* Dataset is a historical research dataset.
-* No native Change Data Capture (CDC) is available.
-* No streaming ingestion.
-* Personally identifiable information has been anonymized.
-* Research enrichment variables are precomputed statistics rather than operational source data.
-
----
-
-# 15. Downstream Usage
-
-The Bronze table is the source for the following Silver tables:
-
-* SILVER_CUSTOMER
-* SILVER_POLICY
-* SILVER_PRODUCT
-* SILVER_CLAIMS
-* SILVER_ENRICHMENT
-
-These curated datasets are used to build Gold dimension and fact tables for reporting, analytics, and machine learning.
-
----
-
-# 16. Related Documents
-
-* Business_Objective.md
-* Business_Glossary.md
-* Data_Dictionary.md
-* Medallion_Architecture.md
-* Data_Model.md
-* ETL_Pipeline.md
-
----
-
-# 17. Architecture Decisions (Frozen)
-
-| Decision                                         | Status    |
-| ------------------------------------------------ | --------- |
-| Business Grain = (ID_policy, ID_insured, period) | 🔒 Frozen |
-| Bronze Layer stores raw source                   | 🔒 Frozen |
-| Silver Layer uses Delta MERGE                    | 🔒 Frozen |
-| Gold Layer uses Delta MERGE                      | 🔒 Frozen |
-| Incremental Batch Processing                     | 🔒 Frozen |
-| Idempotent Pipeline Design                       | 🔒 Frozen |
-| SCD support through MERGE operations             | 🔒 Frozen |
+No CDC feed, streaming source, or operational source-system connector is asserted by the current CSV ingestion code.

@@ -2,471 +2,64 @@
 
 ## Purpose
 
-This document defines the naming standards used throughout the project.
+This document records naming patterns visible in the committed SQL DDL and Python code. It is not a proposal for renaming existing objects.
 
-The objective is to maintain consistency, readability, and scalability across the data warehouse, ETL pipelines, APIs, and supporting components.
+## Oracle schemas and objects
 
-These conventions apply to all current and future project artifacts.
+The warehouse uses schema-qualified objects including:
+- `DWH_BRONZE.BRONZE_POLICY_DATA`
+- `DWH_SILVER` Silver business tables and `SILVER_STAGE`
+- `DWH_GOLD` dimensions, `FACT_POLICY`, and `GOLD_STAGE`
+- `ETL_CONTROL` for file/load control metadata, as configured in the Python control-table module.
 
----
+## Layer prefixes
 
-# General Principles
+| Layer | Naming pattern | Examples |
+|---|---|---|
+| Bronze | `BRONZE_*` | `BRONZE_POLICY_DATA` |
+| Silver | `SILVER_*` | `SILVER_RECORD`, `SILVER_FINANCIAL` |
+| Gold dimensions | `DIM_*` | `DIM_POLICY`, `DIM_CUSTOMER` |
+| Gold fact | `FACT_*` | `FACT_POLICY` |
+| Technical staging | layer-specific `*_STAGE` | `SILVER_STAGE`, `GOLD_STAGE` |
 
-- Use uppercase for all Oracle database objects.
-- Use snake_case for Python files and variables.
-- Use meaningful business names.
-- Avoid abbreviations unless they are standard business terms.
-- Keep names consistent across all layers.
-- Follow the same naming convention for future objects.
+## Keys
 
----
+Observation-level business keys are:
+`ID_POLICY, ID_INSURED, PERIOD`.
 
-# Database Object Naming
+The Silver merge implementation uses those three columns for observation-level tables and `PERIOD` for `SILVER_TIME`.
 
-## Bronze Tables
+Gold surrogate key names defined by the DDL:
+- `TIME_KEY`
+- `CUSTOMER_KEY`
+- `POLICY_KEY`
+- `PRODUCT_KEY`
+- `CHANNEL_KEY`
 
-Pattern
+Gold dimension business keys are:
+- `DIM_TIME`: `PERIOD`
+- `DIM_CUSTOMER`: `ID_POLICY, ID_INSURED`
+- `DIM_POLICY`: `ID_POLICY`
+- `DIM_PRODUCT`: `TYPE_PRODUCT, REIMBURSEMENT`
+- `DIM_CHANNEL`: `DISTRIBUTION_CHANNEL`
 
-```
-BRONZE_<ENTITY_NAME>
-```
+## Column naming
 
-Examples
+SQL identifiers use uppercase names in the DDL. Python source projections use the canonical source-field names and the Gold transformation selects uppercase column identifiers after reading Oracle tables through JDBC. The Silver projection code normalizes Oracle JDBC column-name casing before selecting source columns.
 
-```
-BRONZE_POLICY_DATA
-BRONZE_CUSTOMER_DATA
-```
+## Technical fields
 
----
+The pipeline uses fields including `LOAD_ID`, `LOAD_TIMESTAMP`, `SOURCE_FILE`, `SOURCE_FILE_HASH`, `RECORD_HASH`, and `ETL_CREATED_BY`. Their presence and purpose must be taken from the corresponding DDL and Python modules; file-level and row-level hashes are distinct.
 
-## Silver Tables
+## Current object scope
 
-Pattern
+There is no implemented `SILVER_CLAIMS`, `SILVER_ENRICHMENT`, or `FACT_CLAIMS` object in the current Silver projections/Gold DDL and loader. Do not use these names as current warehouse objects.
 
-```
-SILVER_<ENTITY_NAME>
-```
+## Python module naming
 
-Examples
+Layer modules use names such as:
+- `bronze_loader.py`, `bronze_transform.py`, `bronze_validator.py`
+- `silver_loader.py`, `silver_transform.py`, `silver_merge.py`, `silver_validator.py`
+- `gold_loader.py`, `gold_transform.py`
 
-```
-SILVER_POLICY
-SILVER_CUSTOMER
-SILVER_PRODUCT
-SILVER_CLAIMS
-SILVER_ENRICHMENT
-```
-
----
-
-## Gold Dimension Tables
-
-Pattern
-
-```
-DIM_<ENTITY_NAME>
-```
-
-Examples
-
-```
-DIM_POLICY
-DIM_CUSTOMER
-DIM_PRODUCT
-DIM_CHANNEL
-DIM_TIME
-```
-
----
-
-## Gold Fact Tables
-
-Pattern
-
-```
-FACT_<BUSINESS_PROCESS>
-```
-
-Examples
-
-```
-FACT_POLICY
-FACT_CLAIMS
-```
-
----
-
-## Views
-
-Pattern
-
-```
-VW_<NAME>
-```
-
-Example
-
-```
-VW_POLICY_SUMMARY
-```
-
----
-
-## Materialized Views
-
-Pattern
-
-```
-MV_<NAME>
-```
-
-Example
-
-```
-MV_POLICY_KPI
-```
-
----
-
-# Column Naming
-
-Columns use uppercase with underscores.
-
-Pattern
-
-```
-COLUMN_NAME
-```
-
-Examples
-
-```
-ID_POLICY
-ID_INSURED
-PERIOD
-PREMIUM
-AGE
-DATE_EFFECT_POLICY
-```
-
----
-
-# Primary Keys
-
-Pattern
-
-```
-PK_<TABLE_NAME>
-```
-
-Examples
-
-```
-PK_DIM_POLICY
-
-PK_FACT_POLICY
-```
-
----
-
-# Foreign Keys
-
-Pattern
-
-```
-FK_<CHILD_TABLE>_<PARENT_TABLE>
-```
-
-Examples
-
-```
-FK_FACT_POLICY_DIM_POLICY
-
-FK_FACT_POLICY_DIM_CUSTOMER
-```
-
----
-
-# Indexes
-
-Pattern
-
-```
-IDX_<TABLE_NAME>_<COLUMN_NAME>
-```
-
-Examples
-
-```
-IDX_DIM_POLICY_ID_POLICY
-
-IDX_FACT_POLICY_PERIOD
-```
-
----
-
-# Sequences
-
-Pattern
-
-```
-SEQ_<TABLE_NAME>
-```
-
-Example
-
-```
-SEQ_DIM_CUSTOMER
-```
-
----
-
-# Constraints
-
-Pattern
-
-```
-CK_<TABLE_NAME>_<COLUMN_NAME>
-```
-
-Example
-
-```
-CK_DIM_CUSTOMER_GENDER
-```
-
----
-
-# ETL Script Naming
-
-Python ETL scripts follow:
-
-```
-<layer>_<entity>_etl.py
-```
-
-Examples
-
-```
-bronze_ingestion_etl.py
-
-silver_policy_etl.py
-
-silver_customer_etl.py
-
-gold_policy_etl.py
-```
-
----
-
-# Utility Scripts
-
-Pattern
-
-```
-<purpose>.py
-```
-
-Examples
-
-```
-config.py
-
-logger.py
-
-jdbc_connection.py
-
-merge_loader.py
-
-validation.py
-```
-
----
-
-# Airflow DAG Naming
-
-Pattern
-
-```
-<layer>_<process>_dag.py
-```
-
-Examples
-
-```
-bronze_etl_dag.py
-
-silver_etl_dag.py
-
-gold_etl_dag.py
-
-daily_pipeline_dag.py
-```
-
----
-
-# API Naming
-
-REST endpoints follow plural resource naming.
-
-Pattern
-
-```
-/api/v1/<resource>
-```
-
-Examples
-
-```
-/api/v1/policies
-
-/api/v1/customers
-
-/api/v1/claims
-```
-
----
-
-# Streamlit Pages
-
-Pattern
-
-```
-<page_name>.py
-```
-
-Examples
-
-```
-dashboard.py
-
-policy_analysis.py
-
-claims_analysis.py
-```
-
----
-
-# Git Branch Naming
-
-Pattern
-
-```
-feature/<feature_name>
-
-bugfix/<issue_name>
-
-docs/<document_name>
-
-release/<version>
-```
-
-Examples
-
-```
-feature/gold-layer
-
-feature/airflow
-
-docs/data-dictionary
-
-bugfix/jdbc-connection
-```
-
----
-
-# Git Commit Convention
-
-Pattern
-
-```
-<type>: <description>
-```
-
-Types
-
-```
-feat
-
-fix
-
-docs
-
-refactor
-
-test
-
-chore
-```
-
-Examples
-
-```
-feat: implement bronze ingestion
-
-feat: create silver policy ETl
-
-docs: update business glossary
-
-fix: jdbc connection issue
-```
-
----
-
-# Logging Convention
-
-Format
-
-```
-[Timestamp] [Layer] [Status] Message
-```
-
-Example
-
-```
-2026-07-01 10:15:12
-
-[BRONZE]
-
-[SUCCESS]
-
-Loaded 125,456 records
-```
-
----
-
-# Future Objects
-
-Any future database object introduced into the project should follow the conventions defined in this document.
-
-This ensures consistency as the warehouse evolves.
-
----
-
-# Frozen Standards
-
-| Object | Convention |
-|----------|------------|
-| Bronze Tables | BRONZE_* |
-| Silver Tables | SILVER_* |
-| Dimension Tables | DIM_* |
-| Fact Tables | FACT_* |
-| Views | VW_* |
-| Materialized Views | MV_* |
-| Primary Keys | PK_* |
-| Foreign Keys | FK_* |
-| Indexes | IDX_* |
-| Sequences | SEQ_* |
-| Constraints | CK_* |
-| ETL Scripts | layer_entity_etl.py |
-| Airflow DAGs | layer_process_dag.py |
-| REST APIs | /api/v1/resource |
-| Python Variables | snake_case |
-| Oracle Objects | UPPERCASE |
-
----
-
-# Summary
-
-This naming convention provides a consistent standard for database objects, ETL components, APIs, orchestration workflows, and supporting project artifacts. The conventions are designed to support future expansion while maintaining readability and consistency across the entire data engineering solution.
+Orchestration is implemented in `src/orchestration/pipeline.py`; the Airflow DAG is `dags/insurance_risk_intelligence_pipeline.py`.

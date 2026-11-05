@@ -4,99 +4,76 @@
 
 Insurance Risk Intelligence Platform
 
----
-
 ## Purpose
 
-Develop an enterprise-grade Insurance Risk Intelligence Platform that demonstrates modern Data Engineering practices by integrating data warehousing, ETL, analytics, orchestration, APIs, and AI-powered business insights.
-
----
+Build an insurance data engineering and analytics platform that demonstrates data warehousing, ETL, dimensional modelling, orchestration, API development and interactive analytics. GenAI/RAG capabilities remain a future phase.
 
 ## Business Problem
 
-Insurance organizations generate large volumes of policy, claims, customer, and financial data. Business users often struggle to efficiently analyze profitability, customer retention, claims behavior, and portfolio risk due to fragmented data sources and limited analytical capabilities.
+The project uses an insurance research dataset to organize policy, insured, product, channel, coverage and financial observations into a warehouse that can support portfolio analysis. The current implementation provides a curated Oracle star schema, read-only analytics API and Streamlit dashboard.
 
-This project aims to centralize insurance data into a scalable data warehouse while enabling interactive analytics and natural language querying through Large Language Models (LLMs).
+The source and implemented model do not establish a separate claim-level business entity. Annual claim cost is represented as a measure at the policy-insured-period observation grain.
 
----
+## Objectives and implementation status
 
-## Project Objectives
-
-- Design an enterprise-grade Insurance Data Warehouse using Medallion Architecture.
-- Build scalable ETL pipelines using PySpark.
-- Orchestrate ETL workflows using Apache Airflow.
-- Store curated data in Oracle Database following dimensional modeling principles.
-- Generate business KPIs for underwriting, claims, profitability, and customer retention.
-- Develop REST APIs using FastAPI.
-- Build an interactive analytics dashboard using Streamlit.
-- Enable AI-powered analytics using Retrieval-Augmented Generation (RAG).
-- Support Natural Language to SQL (NL2SQL) querying using LLMs.
-- Implement metadata management and data lineage for governance and traceability.
-
----
+| Objective | Current status evidenced by repository |
+|---|---|
+| Design an Insurance Data Warehouse using Medallion Architecture | Implemented: Bronze, Silver and Gold |
+| Build ETL pipelines using PySpark | Implemented for Bronze, Silver and Gold |
+| Store curated data in Oracle | Implemented |
+| Apply dimensional modelling | Implemented: five dimensions and FACT_POLICY |
+| Validate data quality and warehouse reconciliation | Implemented; execution evidence in `docs/VALIDATION.md` |
+| Orchestrate ETL workflows | Implemented in Python orchestration and an Airflow DAG; DAG is manually triggered/unscheduled |
+| Expose analytics through REST APIs | Implemented using FastAPI; see API source and README |
+| Provide interactive analytics | Implemented using Streamlit; see `docs/DASHBOARD.md` |
+| Enable RAG-based business-document retrieval | Future phase; not implemented |
+| Enable NL2SQL / natural-language querying | Future phase; not implemented |
+| Add an LLM provider, embedding model or vector database | Not selected/implemented in the current repository |
+| Maintain metadata and lineage | Technical lineage fields are implemented in the warehouse; broader governance capabilities should not be inferred |
 
 ## Scope
 
-### In Scope
+### Implemented scope
 
-- Data ingestion
-- Data cleansing
-- Data transformation
-- Data warehouse design
-- KPI generation
-- Interactive dashboards
-- AI-powered analytics
-- Metadata management
-- Data lineage
-- API development
-- Workflow orchestration
+- CSV ingestion and Bronze persistence.
+- Silver subject projections and Oracle MERGE.
+- Gold star-schema construction and full-refresh loading.
+- Data quality validation and Bronze/Silver/Gold reconciliation.
+- Python and Airflow orchestration.
+- Read-only FastAPI analytics service.
+- Streamlit dashboard consuming the API.
 
----
+### Future scope
 
-### Out of Scope
+- RAG over approved business and technical documentation.
+- LLM integration and provider selection.
+- Embedding generation and vector database.
+- NL2SQL, subject to controlled query design and validation.
 
-- Real-time streaming
-- Production cloud deployment
-- CI/CD pipelines
-- Authentication and authorization
-- Multi-user management
+### Not evidenced as implemented
 
----
+The current repository does not establish real-time streaming, CDC ingestion, production cloud deployment, production scheduling, CI/CD, multi-user management, or an implemented RAG/NL2SQL assistant. Do not represent these as delivered capabilities.
 
-## Expected Business Outcomes
+## Expected analytical use
 
-- Centralized insurance data repository
-- Improved analytical capabilities
-- Automated KPI generation
-- Faster business reporting
-- AI-assisted decision support
-- Better data governance
-- Reusable enterprise data engineering framework
+The implemented dashboard/API exposes portfolio, yearly, product, channel, policy, customer and customer-cohort analyses. The exact metrics and grain must follow the API queries and dashboard metric definitions; this document does not add new KPI formulas or business rules.
 
----
+## Technology stack
 
-## Technology Stack
+| Area | Implemented technology / status |
+|---|---|
+| Data processing | Python, PySpark |
+| Warehouse database | Oracle |
+| Orchestration | Python orchestration and Apache Airflow DAG (manual/unscheduled) |
+| Analytics API | FastAPI |
+| Dashboard | Streamlit |
+| GenAI / RAG / NL2SQL | Future phase; provider, framework, embeddings and vector store not frozen |
 
-| Layer                     | Technology            |
-|---------------------------|-----------------------|
-| Data Warehouse            | Oracle Database       |
-| ETL                       | PySpark               |
-| Workflow Orchestration    | Apache Airflow        |
-| Backend API               | FastAPI               |
-| Frontend                  | Streamlit             |
-| AI                        | Gemini/Groq           |
-| RAG                       | LangChain + FAISS     |
-| Version Control           | Git + GitHub          |
+## Related implementation documentation
 
----
-
-## Project Architecture
-
-Refer to:
-
-- Medallion Architecture
-- Business Entity Model
-- Star Schema
-- Data Lineage
-
-(Documentation available under the Data Architecture section.)
+- `docs/ARCHITECTURE.md`
+- `docs/02_Data_Architecture/Data Model.md`
+- `docs/02_Data_Architecture/Data Flow.md`
+- `docs/ORCHESTRATION.md`
+- `docs/DASHBOARD.md`
+- `docs/VALIDATION.md`
